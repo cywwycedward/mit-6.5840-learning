@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>速查：Go 并发安全状态</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Reference · Go 并发</p>
+    <h1>并发安全状态：最小速查表</h1>
+    <p class="lede">适用于共享计数器、内存 KV、任务表和请求去重表。先决定状态由谁拥有，再让每一次读写遵守同一套同步规则。</p>
+
+    <h2>判断数据竞争</h2>
+    <div class="callout">
+      <p>两个或更多 goroutine <strong>并发访问同一变量</strong>，且其中至少一个是<strong>写</strong>，并且没有适当同步，就是 data race。</p>
+    </div>
+    <ul>
+      <li><strong>写 + 写</strong>：两个请求同时更新同一个计数器或 map。</li>
+      <li><strong>读 + 写</strong>：一个请求读取值，另一个请求同时更新它。</li>
+      <li><strong>读 + 读</strong>：通常不是 data race；仍要考虑数据结构自身的约束。</li>
+    </ul>
+
+    <h2>Mutex 模板</h2>
+    <pre><code>type Counter struct {
+	mu   sync.Mutex
+	hits int
+}
+
+func (c *Counter) Add() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.hits++
+}
+
+func (c *Counter) Value() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.hits
+}</code></pre>
+    <p><code>mu</code> 保护 <code>hits</code>。只要有并发写入，所有对 <code>hits</code> 的并发读和写都必须遵守这一约定。<code>defer</code> 让函数返回时释放锁，避免以后加入分支时漏掉 <code>Unlock</code>。</p>
+
+    <h2>验证命令</h2>
+    <div class="callout">
+      <p><strong><code>go test</code> 的用途：</strong>编译并运行当前 Go module 中以 <code>_test.go</code> 结尾的测试文件。请在含有 <code>go.mod</code> 的项目根目录运行它。</p>
+      <p><strong><code>./...</code> 的含义：</strong>从当前目录 <code>.</code> 开始，递归选择所有子 package；练习只有一个 package 时也可写 <code>.</code>。</p>
+      <p><strong><code>-race</code> 的含义：</strong>启用 Go 内置的数据竞争检测器。命令成功时通常输出 <code>ok &lt;package&gt;</code>；发现问题时会显示 <code>WARNING: DATA RACE</code> 和冲突访问的调用栈。</p>
+    </div>
+    <pre><code>go test ./...
+go test -race ./...</code></pre>
+    <div class="callout warning">
+      <p><code>-race</code> 只会发现<strong>实际运行到的路径</strong>上的竞争；绿色结果不是并发正确性的数学证明。用测试制造并发访问，并人工检查状态所有权。</p>
+    </div>
+
+    <h2>调试顺序</h2>
+    <ol>
+      <li>从 race report 找到冲突的读/写位置和 goroutine 创建位置。</li>
+      <li>写出“哪个锁（或哪个 goroutine）拥有这份状态”。</li>
+      <li>让每个访问点遵守同一个同步规则，再运行 <code>go test -race</code>。</li>
+      <li>最后确认锁粒度没有把网络 I/O 或缓慢操作包在临界区里。</li>
+    </ol>
+
+    <p class="footnotes">权威资料：<a href="https://go.dev/doc/articles/race_detector">Go Data Race Detector</a>、<a href="https://pkg.go.dev/sync">sync 包文档</a>。相关课程：<a href="../lessons/0001-go-concurrent-state.html">第一节课</a>。</p>
+  </main>
+</body>
+</html>

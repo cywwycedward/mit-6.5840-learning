@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第二节：让学习成果拥有可回溯的 Git 历史</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">MIT 6.5840 路线 · 第 02 节</p>
+    <h1>让学习成果拥有可回溯的 Git 历史</h1>
+    <p class="lede">你将把这个学习工作区变成一组可解释的快照：每个改变有边界、能检查，也能在以后追溯“为什么这样学、为什么这样改”。</p>
+
+    <section class="meta" aria-label="课程信息">
+      <div><span class="label">单一技能</span>完成一次原子 Git 提交</div>
+      <div><span class="label">完成标准</span>能解释暂存区和提交边界</div>
+      <div><span class="label">进入课程的意义</span>让 Go 练习可回退、可审阅</div>
+    </section>
+
+    <div class="callout">
+      <p><strong>先建立正确心智模型。</strong>Git 的提交不是“保存按钮”，而是一份有目的、可追溯的快照。工作区是你正在编辑的文件；暂存区是你挑选出来准备成为下一份快照的文件；提交把暂存区永久记录到本地仓库历史。</p>
+    </div>
+
+    <h2>先预测，不查答案</h2>
+    <section class="quiz" data-quiz>
+      <h3>检查 1</h3>
+      <p>你改了课程正文和一处无关的编辑器设置，只希望正文进入这次提交。应先把哪一类文件放入暂存区？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：只暂存课程正文及其必要的相关文件，提交才有单一、可说明的理由。" data-wrong="再想一次：暂存区让你选择下一次提交的边界，而不是自动收集所有改动。" aria-pressed="false">A</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：暂存区让你选择下一次提交的边界，而不是自动收集所有改动。" aria-pressed="false">B</button>
+      </div>
+      <p><small>A：课程正文及必要相关文件。　B：所有已改文件。</small></p>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>这个工作区采用的规则</h2>
+    <p>这里只有一个长期分支 <code>main</code>，表示可复习、可运行的学习里程碑。每项实际改动在短生命周期分支中完成，例如 <code>lesson/git-workflow</code> 或 <code>exercise/safe-counter</code>；验证并自审后，以 fast-forward 合并回 <code>main</code>。</p>
+    <div class="diagram">main ───●──────────●───  稳定快照
+           \        /
+            lesson/git-workflow     一个聚焦目标</div>
+    <p>完整的跟踪边界、命名和提交规则见 <a href="../docs/git-workflow.md">Git 管理规范</a>；提交前可以回看 <a href="../reference/git-learning-workspace.html">速查表</a>。</p>
+
+    <h2>命令卡：首次初始化本地仓库</h2>
+    <div class="callout">
+      <p><strong>目的：</strong>让当前工作区开始拥有本地历史。请在本项目根目录 <code>MIT6.5840/</code> 运行命令；不要在 <code>lessons/</code> 或 <code>src/</code> 子目录运行。</p>
+      <p><strong>命令：</strong><code>git init -b main</code> 中，<code>git init</code> 创建 Git 仓库，<code>-b main</code> 把初始分支命名为 <code>main</code>。它只创建本机的 <code>.git/</code> 元数据，不会联网、上传或修改课程文件。</p>
+      <p><strong>成功与检查：</strong>成功后会显示仓库初始化信息。接着运行 <code>git status --short</code>：<code>status</code> 只读地报告状态，<code>--short</code> 用两列状态简写输出。你应看到当前文件是未跟踪的 <code>??</code> 项。</p>
+      <p><strong>停止/回退：</strong>若发现目录选错，先不要执行 add 或 commit；确认后只删除该错误目录下新建的 <code>.git/</code> 元数据目录即可恢复为未初始化状态。不要删除项目根目录或课程文件。</p>
+    </div>
+
+    <h2>命令卡：选出第一份快照</h2>
+    <div class="callout">
+      <p><strong>目的：</strong>把已检查的基线放进暂存区，再创建第一条本地历史。仍在项目根目录运行。</p>
+      <p><strong>命令：</strong><code>git add --all</code> 中，<code>add</code> 把文件内容放入暂存区，<code>--all</code> 选择所有未被 <code>.gitignore</code> 排除的变化。首次建库时它用于完整基线；日常改动改用 <code>git add &lt;明确路径&gt;</code>，避免误收无关文件。</p>
+      <p><strong>检查：</strong><code>git diff --cached</code> 只读地显示暂存区将要提交的差异。确认范围正确后，运行 <code>git commit -m "chore(repo): 建立学习工作区基线"</code>：<code>commit</code> 创建本地快照，<code>-m</code> 后的文字是提交标题。成功后再运行 <code>git status --short</code>，预期没有输出。</p>
+      <p><strong>停止/回退：</strong>若暂存区包含错误文件，执行 <code>git restore --staged &lt;路径&gt;</code> 将其移出暂存区；该命令不会删除工作区中的文件。尚未推送的提交需要调整时，先检查差异并向我说明情况，不用猜测性地执行破坏性命令。</p>
+    </div>
+
+    <h2>命令卡：为下一项学习建立工作分支</h2>
+    <div class="callout">
+      <p><strong>目的：</strong>把下一项练习和稳定的 <code>main</code> 隔开。确认 <code>git status --short</code> 无输出后，在项目根目录运行 <code>git switch -c exercise/&lt;topic&gt;</code>。<code>switch</code> 切换分支，<code>-c</code> 同时创建分支，<code>&lt;topic&gt;</code> 替换为短小的英文主题，例如 <code>safe-counter</code>。</p>
+      <p><strong>结果与检查：</strong>终端会报告已切换到新分支；<code>git branch --show-current</code> 会只读显示当前分支名。完成并验证后，先运行 <code>git switch main</code> 回到稳定分支，再运行 <code>git merge --ff-only exercise/&lt;topic&gt;</code>。其中 <code>merge</code> 合并分支，<code>--ff-only</code> 只允许无合并提交的直线历史；若不能快进，先停下理解原因。</p>
+      <p><strong>清理：</strong>确认合并成功且 <code>main</code> 可用后，<code>git branch -d exercise/&lt;topic&gt;</code> 删除已经合并的本地工作分支；<code>-d</code> 会拒绝删除尚未合并的分支，因此比强制删除安全。</p>
+    </div>
+
+    <section class="quiz" data-quiz>
+      <h3>检查 2</h3>
+      <p>发现 <code>main</code> 上有一个自己不认识的已修改文件时，第一步应该是什么？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：先用 status 和 diff 查明来源及内容，再决定如何处理；未知改动可能很重要。" data-wrong="不对：破坏性清理会丢掉尚未理解的工作。先检查证据。" aria-pressed="false">A</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：破坏性清理会丢掉尚未理解的工作。先检查证据。" aria-pressed="false">B</button>
+      </div>
+      <p><small>A：检查 status 与 diff。　B：立即清理所有变化。</small></p>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="practice">
+      <h2>你的任务</h2>
+      <ol>
+        <li>不用看上文，解释工作区、暂存区和提交各自保存什么。</li>
+        <li>按第一张命令卡初始化仓库，先只运行到 <code>git status --short</code>，把输出发给我。</li>
+        <li>指出第一次提交为什么可以使用 <code>git add --all</code>，而日常提交不应该默认这么做。</li>
+      </ol>
+    </section>
+
+    <section class="checklist">
+      <h2>完成检查</h2>
+      <ul>
+        <li>我能用自己的话说出工作区、暂存区、提交的差别。</li>
+        <li>我知道 <code>main</code> 是稳定分支，改动应在短期工作分支完成。</li>
+        <li>我能先看暂存区 diff，再做原子提交。</li>
+        <li>我不会用强制重置或清理命令掩盖未知改动。</li>
+      </ul>
+    </section>
+
+    <section class="next-step">
+      <h2>下一步</h2>
+      <p>请把两道检查题的答案、你对三个 Git 区域的一句解释，以及 <code>git status --short</code> 输出发给我。确认后，我们会一起审查你的首个基线暂存区，而不是让你在未检查范围时直接提交。</p>
+    </section>
+
+    <p class="footnotes">主要资料：<a href="https://git-scm.com/book/zh/v2">Pro Git（官方）</a>、<a href="https://git-scm.com/docs/gitignore">gitignore 文档</a>、<a href="https://git-scm.com/docs/git-commit">git-commit 文档</a>。相关资料：<a href="../docs/git-workflow.md">Git 管理规范</a>、<a href="../reference/git-learning-workspace.html">Git 速查表</a>。任何命令或 Git 概念不清楚时，请直接问我。</p>
+  </main>
+</body>
+</html>

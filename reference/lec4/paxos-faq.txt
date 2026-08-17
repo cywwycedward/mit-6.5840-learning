@@ -1,0 +1,103 @@
+Paxos FAQ
+
+Q: How does Paxos prevent split-brain?
+
+A: For Paxos, split brain means that different servers "agree" on
+different values. The places in Paxos where it must wait for a
+majority to respond are enough to prevent this. If there are two
+active proposers, the Paxos algorithm requires them both to get
+prepare replies from a majority of acceptors, and accept replies from
+a majority of acceptors. The two proposers' majorities must overlap in
+at least one server; the reply from that server will tell the losing
+proposer (the one with the smaller n) that it has lost, or (if the
+lower number proposer has already reached agreement) will tell the
+higher-numbered server what the agreed value was.
+
+If a network failure has partitioned the servers, then at most one of
+the partitions can possibly contain a majority of the servers. So
+Paxos will only be able to reach agreement in that partition. Servers
+in the other partitions won't be able to agree on anything. Thus split
+brain is avoided under network partition.
+
+Q: What are some ways to ensure unique proposal numbers?
+
+A: A proposer can put an ID that's different for each proposer in the
+low bits of the proposal number. For example, a proposer could put its
+IP address in the low bits. Then different proposers will never use
+the same proposal number. Each proposer can avoid re-using the same
+proposal number by keeping a variable holding the highest proposal
+number it has used so far, and, when it starts a new proposal, make
+sure the new proposal number is higher.
+
+If you are feeling lucky, you could use numbers that have the current
+time in the high bits and a random number in the low bits. You'd want
+lots of bits for the random number to keep the probability of
+collision super low.
+
+Q: In 2.4, what is the distinguished proposer about?
+
+A: The idea is that the implementation should try to make it likely
+that there's at most one active proposal at a time. This is not a
+requirement for correctness; it is advice about how to reach agreement
+faster. One way to do this is to have each proposer wait a random
+amount of time before sending prepare messages. Then there the
+proposer who chose the smallest random number will go first and will
+likely complete agreement before the other proposers finish their
+sleeping. There can still be more than one proposer, but this
+randomization scheme breaks the symmetry among the proposers and
+causes it to be likely that one of them wins.
+
+Q: How does the algorithm terminate?
+
+A: A Paxos agreement doesn't have a well-defined termination point.
+However, if there are no failures, a proposer can observe that
+agreement has been reached (because it gets accept replies from
+everyone), and it can safely stop proposing at that point.
+
+Q: What are some use cases for Paxos?
+
+A: Paxos helps you build replicated services, which can increase fault
+tolerance. For example, one can build a Paxos-replicated database with
+three servers, such that if one of the servers fails, the other two
+can continue to execute database requests.
+
+You can see various uses if you search the web for papers about Chubby,
+Spanner, Megastore, Spinnaker, and Zookeeper.
+
+Q: How fast is Paxos?
+
+A: There are two main limits to performance: message exchanges, and
+writing updated n and v information to disk (so they can be recovered
+if the server crashes and restarts). Paxos requires at least two
+message exchanges in order to agree; if all hosts are within the same
+datacenter this might take a few hundred microseconds. Paxos also
+requires two writes to the disk (one for prepare, one for accept);
+depending on disk technology this could take anywhere from a few
+hundred microseconds to a few tens of milliseconds.
+
+So without clever optimizations Paxos will be relatively slow. This
+paper describes some of what's needed for good performance:
+
+  http://research.google.com/archive/paxos_made_live.html
+
+Q: What does the paper mean by a leader on page 9? Does Paxos have a
+leader?
+
+A: Section 3 of the paper is not about Paxos itself, but about one way to
+implement and use Paxos. Paxos itself doesn't require a leader. I do not
+know whether any real-world Paxos implementations use the ideas in
+Section 3. It may be that when the paper speaks of electing a leader, it
+means using Paxos to agree on a leader. Or one could use any of a number
+of schemes that usually (but not always) result in agreement on a leader
+(since Paxos will be correct regardless), such as letting the
+participant with the lowest IP address propose with no delay, but
+requiring other participants to sleep for a random amount of time before
+proposing. Much of the point of a leader is to avoid simultaneous
+different proposals, which require multiple Paxos rounds to sort out.
+
+The best paper I know about real-life implementation and use of Paxos is
+Paxos Made Live:
+
+  http://research.google.com/archive/paxos_made_live.html
+
+Section 5.2 on master leases may be the most relevant.

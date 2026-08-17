@@ -1,0 +1,80 @@
+:root {
+  color-scheme: light;
+  --ink: #19222c;
+  --muted: #5b6673;
+  --paper: #fbfaf7;
+  --panel: #ffffff;
+  --line: #d9dedf;
+  --accent: #006d77;
+  --accent-pale: #e2f2f1;
+  --warn: #8d5200;
+  --warn-pale: #fff1db;
+  --good: #146c43;
+  --good-pale: #e5f5eb;
+  --bad: #a43b38;
+  --bad-pale: #fae9e8;
+  --code: #17212b;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--paper); }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.72;
+}
+main { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: 54px 0 80px; }
+.eyebrow { margin: 0 0 10px; color: var(--accent); font-weight: 750; font-size: .88rem; letter-spacing: .08em; text-transform: uppercase; }
+h1, h2, h3 { line-height: 1.25; }
+h1 { margin: 0; font-family: Georgia, "Noto Serif SC", serif; font-size: clamp(2rem, 5vw, 3.45rem); letter-spacing: -.035em; }
+h2 { margin: 56px 0 15px; font-size: 1.55rem; }
+h3 { margin: 28px 0 8px; font-size: 1.08rem; }
+p { margin: 0 0 16px; }
+a { color: var(--accent); text-underline-offset: 3px; }
+.lede { max-width: 48rem; margin-top: 18px; font-size: 1.2rem; color: #35414d; }
+.meta, .callout, .quiz, .practice, .checklist, .next-step, details { margin: 24px 0; padding: 20px 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.meta div { padding-right: 12px; border-right: 1px solid var(--line); }
+.meta div:last-child { padding-right: 0; border-right: 0; }
+.meta strong, .label { display: block; color: var(--muted); font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; }
+.callout { border-color: #bededc; background: var(--accent-pale); }
+.callout.warning { border-color: #f0d6ae; background: var(--warn-pale); }
+.callout p:last-child, .quiz p:last-child, .practice p:last-child { margin-bottom: 0; }
+code, pre { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
+code { padding: .1em .3em; border-radius: 4px; background: #edf0f1; font-size: .9em; }
+pre { overflow-x: auto; margin: 16px 0; padding: 18px; color: #f7fafc; background: var(--code); border-radius: 10px; font-size: .88rem; line-height: 1.55; }
+pre code { padding: 0; background: transparent; font-size: 1em; }
+.diagram { margin: 22px 0; padding: 16px; border-left: 4px solid var(--accent); background: #f1f6f5; font-family: "Cascadia Code", monospace; white-space: pre-wrap; }
+ol, ul { padding-left: 1.35em; }
+li + li { margin-top: 7px; }
+.quiz { border-left: 4px solid #5f7ea1; }
+.quiz h3 { margin-top: 0; }
+.answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.answer { min-width: 3.2rem; padding: 8px 14px; border: 1px solid #9baab7; border-radius: 7px; color: var(--ink); background: #fff; font: inherit; cursor: pointer; }
+.answer:hover, .answer:focus-visible { border-color: var(--accent); outline: 3px solid #c9e8e6; }
+.answer.correct { border-color: var(--good); background: var(--good-pale); }
+.answer.incorrect { border-color: var(--bad); background: var(--bad-pale); }
+.feedback { min-height: 1.72em; margin-top: 12px; font-weight: 650; }
+.feedback.good { color: var(--good); }
+.feedback.bad { color: var(--bad); }
+details summary { cursor: pointer; font-weight: 700; }
+details[open] summary { margin-bottom: 12px; }
+.checklist li { list-style: "✓  "; padding-left: 5px; }
+.next-step { border-color: #cbd4e4; background: #f3f6fb; }
+.footnotes { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: .92rem; }
+
+@media (max-width: 600px) {
+  main { width: min(100% - 24px, 920px); padding-top: 34px; }
+  .meta { grid-template-columns: 1fr; }
+  .meta div { padding: 0 0 10px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .meta div:last-child { padding-bottom: 0; border-bottom: 0; }
+}
+@media print {
+  body { background: #fff; font-size: 11pt; }
+  main { width: 100%; padding: 0; }
+  .quiz, .next-step { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+}

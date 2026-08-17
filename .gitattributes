@@ -1,0 +1,13 @@
+# Keep source, lessons, and reference text consistent between Windows and WSL2.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Course source material must never be treated as text.
+*.pdf binary
+*.tar.gz binary
+
+# Preserve upstream course material as supplied; its historical whitespace is not
+# a project-quality signal. Locally authored lessons and docs remain checked.
+reference/lec*/** -whitespace

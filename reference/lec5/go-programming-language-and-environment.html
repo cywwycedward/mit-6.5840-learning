@@ -1,0 +1,1424 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="profile" href="https://gmpg.org/xfn/11">
+
+	<script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="095b91a6-f087-4380-b01d-e44b1c2af358" data-blockingmode="auto" type="text/javascript"></script>
+	<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XYTVD2CXR4"></script>
+<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'G-XYTVD2CXR4');
+</script>
+
+	<title>The Go Programming Language and Environment &#8211; Communications of the ACM</title>
+<meta name='robots' content='max-image-preview:large' />
+<link rel='dns-prefetch' href='//cdn.parsely.com' />
+<link rel="alternate" type="application/rss+xml" title="Communications of the ACM &raquo; Feed" href="https://cacm.acm.org/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Communications of the ACM &raquo; Comments Feed" href="https://cacm.acm.org/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="Communications of the ACM &raquo; The Go Programming Language and Environment Comments Feed" href="https://cacm.acm.org/research/the-go-programming-language-and-environment/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://cacm.acm.org/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fcacm.acm.org%2Fresearch%2Fthe-go-programming-language-and-environment%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://cacm.acm.org/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fcacm.acm.org%2Fresearch%2Fthe-go-programming-language-and-environment%2F&#038;format=xml" />
+<link rel="preload" href="https://cacm.acm.org/wp-content/themes/cacm/client/src/fonts/inter-v12-latin-regular.woff2" class="wp-asset-manager cacm-font-inter-regular-woff2" as="font" media="all" type="font/woff2" crossorigin /><link rel="preload" href="https://cacm.acm.org/wp-content/themes/cacm/client/src/fonts/inter-v12-latin-700.woff2" class="wp-asset-manager cacm-font-inter-700-woff2" as="font" media="all" type="font/woff2" crossorigin /><link rel="preload" href="https://cacm.acm.org/wp-content/themes/cacm/client/src/fonts/work-sans-bold.woff2?ver=1.0.0" class="wp-asset-manager cacm-font-work-sans-700-woff2" as="style" media="all" type="font/woff2" /><link rel="preload" href="https://cacm.acm.org/wp-content/themes/cacm/client/src/fonts/work-sans-extrabold.woff2?ver=1.0.0" class="wp-asset-manager cacm-font-work-sans-800-woff2" as="style" media="all" type="font/woff2" /><script class="wp-asset-manager usage-logger" type="text/javascript">window.amScripts = window.amScripts || {}; window.amScripts["usage-logger"] = {"nonce":"f7182285b7","id":125722,"type":"digital-library","doi":"10.1145\/3488716"}</script><style class="wp-asset-manager cacm-global-critical" type="text/css">@font-face{font-display:swap;font-family:Inter;font-style:normal;src:url(../be7cb18dc7caf47cf7e9.woff2) format("woff2"),url(../817c4274293e221c5076.woff) format("woff")}@font-face{font-display:swap;font-family:Inter;font-style:normal;font-weight:700;src:url(../54321e26b8bf4739a16d.woff2) format("woff2"),url(../7ad0df5561cc0933cead.woff) format("woff")}@font-face{font-display:swap;font-family:Work Sans;font-style:normal;font-weight:500;src:url(../2dd7c3c79fd1aa1d85ca.woff2) format("woff2"),url(../9a8cbe3b3bec955df411.woff) format("woff")}@font-face{font-display:swap;font-family:Work Sans;font-style:normal;font-weight:700;src:url(../ab8702255905c24de1c1.woff2) format("woff2"),url(../9ab52d2504cfe145b9bd.woff) format("woff")}@font-face{font-display:swap;font-family:Work Sans;font-style:normal;font-weight:800;src:url(../cef488e4e9f273a0a1e3.woff2) format("woff2"),url(../a99bf2b51c426338ae2c.woff) format("woff")}html{box-sizing:border-box}html *,html :after,html :before{box-sizing:inherit}a,abbr,address,article,aside,audio,b,blockquote,body,canvas,caption,cite,code,dd,del,details,dfn,div,dl,dt,em,embed,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,html,i,iframe,img,ins,kbd,label,legend,li,mark,menu,nav,object,ol,output,p,pre,q,ruby,s,samp,section,small,span,strike,strong,sub,summary,sup,table,tbody,td,tfoot,th,thead,time,tr,u,ul,var,video{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline}article,aside,details,figcaption,figure,footer,header,menu,nav,section{display:block}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:after,blockquote:before,q:after,q:before{content:"";content:none}table{border-collapse:collapse;border-spacing:0}fieldset{border:none;margin:0;padding:0}button,input,select,textarea{-webkit-appearance:none;-moz-appearance:none;appearance:none;border:0;border-radius:0;font:inherit;margin:0}button{background-color:transparent;padding:0}body,html{font-family:var(--wp--preset--font-family--inter);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}html{scroll-padding-top:var(--wp--custom--siteheader-height)!important}body{overflow-x:hidden}a img{display:block}img{height:auto;max-width:100%}svg{display:block}.container{margin-left:auto;margin-right:auto;width:calc(min(100%,var(--wp--style--global--wide-size) + var(--wp--custom--site-edge)*2) - var(--wp--custom--site-edge)*2)}.screen-reader-only{border:0;clip:rect(0,0,0,0);height:1px;margin:-1px;padding:0;width:1px}.screen-reader-only,.skip-link{overflow:hidden;position:absolute}.skip-link{margin-left:auto;margin-right:auto;background-color:var(--wp--preset--color--white);color:inherit;left:0;opacity:0;padding:.625rem;right:0;text-align:center;text-decoration:none;top:0;transform:translateY(-100%);width:-moz-max-content;width:max-content;z-index:-1}.skip-link:focus{opacity:1;transform:translateY(0);z-index:2147483647}.site-content{padding-top:var(--wp--custom--siteheader-height)}@media(min-width:48rem){.site-content{padding-top:var(--wp--custom--siteheader-height)}}.site-header-hamburger-menu[aria-hidden=true]{display:none}.site-header-membership-nav{align-self:stretch;display:flex;position:relative}.site-header--expanded .site-header-membership-nav,.site-header:not(.site-header--member-logged-in) .site-header-membership-nav{display:none}.site-header{position:fixed;width:100%;z-index:7}.site-header--expanded{height:100%}.site-header--no-js{opacity:0}.site-header.headroom{transition:transform .2s linear;will-change:transform}.site-header.headroom--pinned{transform:translateY(0)}.site-header.headroom--unpinned{height:auto;transform:translateY(-100%)}.site-header-container a{text-decoration:none}.site-header-container a:active,.site-header-container a:focus,.site-header-container a:hover{text-decoration:underline;text-decoration-color:inherit;text-decoration-thickness:1px;text-underline-offset:2.5px}.site-header-container{align-items:center;background-color:var(--wp--preset--color--white);border-bottom:var(--wp--custom--border-gray);display:flex;gap:1rem;height:var(--wp--custom--siteheader-height);justify-content:space-between;padding:0 1rem}@media(min-width:37.5rem){.site-header-container{padding:0 1.5rem}}@media(min-width:48rem){.site-header-container{padding:0 0 0 1rem}}@media(min-width:64rem){.site-header-container{gap:2.25rem}}@media(min-width:80rem){.site-header-container{gap:3rem}}.site-header--member-logged-in .site-header-container{padding:0 0 0 1rem}@media(min-width:37.5rem){.site-header--member-logged-in .site-header-container{padding:0 0 0 1.5rem}}.site-header--expanded .site-header-container{background-color:var(--wp--preset--color--cacm-darker-blue)}@media(max-width:47.9375rem){.site-header-logo,.site-header-search{margin-left:auto}}.site-header-member-login-link{font-weight:var(--wp--custom--font-weight-bold)}.site-header-member-login-link[aria-hidden=true]{visibility:hidden}@media(max-width:47.9375rem){.site-header-member-login-link{display:none}}.site-header--member-logged-in .site-header-member-login-link{display:none}.site-header-magazine-menu,.site-header-topics-menu{position:relative}.site-header-magazine-menu-toggle,.site-header-topics-menu-toggle{font-size:.9375rem;font-weight:var(--wp--custom--font-weight-regular);line-height:1.21;align-items:center;cursor:pointer;display:flex;gap:.3333333333rem}@media(min-width:80rem){.site-header-magazine-menu-toggle,.site-header-topics-menu-toggle{font-size:1rem;font-weight:var(--wp--custom--font-weight-regular);line-height:1.21;gap:.65625rem}}.site-header-magazine-menu-toggle[aria-hidden=true],.site-header-topics-menu-toggle[aria-hidden=true]{visibility:hidden}.site-header-magazine-menu-toggle[aria-expanded=true]>svg,.site-header-topics-menu-toggle[aria-expanded=true]>svg{transform:rotate(180deg)}.site-header-magazine-menu-toggle:focus,.site-header-magazine-menu-toggle:hover,.site-header-topics-menu-toggle:focus,.site-header-topics-menu-toggle:hover{text-decoration:underline}.site-header-magazine-menu-expanded,.site-header-topics-menu-expanded{background-color:var(--wp--preset--color--white);border-radius:.3125rem;box-shadow:0 .125rem .25rem -.125rem rgba(24,39,75,.12),0 .25rem .25rem -.125rem rgba(24,39,75,.08);display:flex;gap:1.875rem;justify-content:space-between;padding:1.75rem 1.875rem 1.5rem;position:absolute;right:0;text-align:left;top:2.28125rem;white-space:nowrap;z-index:4}.site-header-magazine-menu-expanded[aria-hidden=true],.site-header-topics-menu-expanded[aria-hidden=true]{display:none}@media(max-width:47.9375rem){.site-header-magazine-menu,.site-header-topics-menu{display:none}}.site-header:not(.site-header--member-logged-in) .site-header-topics-menu-expanded{left:0;right:auto}</style><style class="wp-asset-manager cacm-article-critical" type="text/css">.article-header{left:50%;margin-left:-50vw;margin-right:-50vw;position:relative;right:50%;width:100vw;background-color:var(--cacm--article-header--background-color);border-bottom:1px solid var(--cacm--article-header--border-color);color:var(--cacm--article-header--text-color);margin-bottom:var(--wp--custom--gap)}@media(min-width:48rem){.article-header{grid-area:header;margin-bottom:1.5rem}}.article-header__inner{--wp--custom--vertical-block-rhythm:0.5rem;padding:2rem 0 0}@media(min-width:48rem){.article-header__inner{--wp--custom--vertical-block-rhythm:0.625rem;display:grid;gap:0 var(--cacm--article--gap);grid-template-columns:auto 1fr;padding:var(--cacm--article--gap) 0}}@media(min-width:64rem){.article-header__inner{grid-template-columns:var(--cacm--article--sidebarleft--width) 1fr}}.article-header__section{margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__section:last-child{margin-bottom:0}.article-header__section a{text-decoration:none}.article-header__section a:active,.article-header__section a:focus,.article-header__section a:hover{text-decoration:underline;text-decoration-color:inherit;text-decoration-thickness:1px;text-underline-offset:2.5px}.article-header__section{display:inline-block}@media(max-width:47.9375rem){.article-header__section{margin-right:.625rem}}@media(min-width:48rem){.article-header__section{grid-column:1/1;text-align:right}}.article-header__section>a{font-size:.875rem;font-weight:700;line-height:1.2142857143;background-color:var(--cacm--article-header--button--background-color);color:var(--cacm--article-header--button--text-color);display:inline-block;padding:.3125rem .625rem;text-transform:uppercase}@media(min-width:48rem){.article-header__figure,.article-header__meta,.article-header__share,.article-header__subtitle,.article-header__title,.article-header__topic-and-issue-section{grid-column:2/2}}.article-header__topic-and-issue-section{--wp--custom--vertical-block-rhythm:0.5rem;margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__topic-and-issue-section:last-child{margin-bottom:0}.article-header__topic-and-issue-section{font-size:.9375rem;line-height:1.5333333333;font-family:var(--wp--preset--font-family--inter);display:flex;flex-direction:column}@media(min-width:48rem){.article-header__topic-and-issue-section{--wp--custom--vertical-block-rhythm:1.25rem;align-items:center;flex-direction:row;gap:2rem}}.article-header__issue-section{color:var(--cacm--article-header--text-color)}.article-header__title{margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__title:last-child{margin-bottom:0}.article-header__title{font-family:var(--wp--preset--font-family--work-sans);font-size:var(--wp--preset--font-size--work-md);line-height:32.2px;font-weight:var(--wp--custom--font-weight-extrabold)}@media(min-width:48rem){.article-header__title{font-size:var(--wp--preset--font-size--work-xxxl);line-height:50.4px;font-weight:var(--wp--custom--font-weight-extrabold)}}@media(min-width:64rem){.article-header__title{font-size:var(--wp--preset--font-size--work-xxl);line-height:44.28px;font-weight:var(--wp--custom--font-weight-extrabold)}}.article-header__subtitle{margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__subtitle:last-child{margin-bottom:0}.article-header__subtitle{font-family:var(--wp--preset--font-family--work-sans);font-size:var(--wp--preset--font-size--work-xxs);line-height:22.5px;font-weight:var(--wp--custom--font-weight-bold);font-size:1.3125rem;line-height:1.2380952381;letter-spacing:-.08px}.article-header__subtitle a{word-break:break-word}.article-header__subtitle b,.article-header__subtitle strong{font-weight:var(--wp--custom--font-weight-bold)}.article-header__subtitle em,.article-header__subtitle i{font-style:italic}.article-header__subtitle del,.article-header__subtitle strike{text-decoration:line-through}.article-header__subtitle sub,.article-header__subtitle sup{font-size:75%;line-height:0;position:relative}.article-header__subtitle sub{bottom:-.25em}.article-header__subtitle sup{top:-.5em}.article-header__subtitle .monospace,.article-header__subtitle p code{font:var(--wp--custom--font-weight-regular) 90%/1.6 Courier,monospace}.article-header__subtitle{font-weight:var(--wp--custom--font-weight-medium);letter-spacing:-.03125rem;margin-bottom:.125rem}@media(min-width:48rem){.article-header__subtitle{--wp--custom--vertical-block-rhythm:1.25rem;margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__subtitle:last-child{margin-bottom:0}.article-header__subtitle{font-family:var(--wp--preset--font-family--work-sans);font-size:var(--wp--preset--font-size--work-xs);line-height:25.2px;font-weight:var(--wp--custom--font-weight-bold);font-size:1.5625rem;line-height:1.2;letter-spacing:-.1px;font-weight:var(--wp--custom--font-weight-medium);letter-spacing:-.03125rem;margin:.5rem 0 .625rem}}.article-header__meta{margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__meta:last-child{margin-bottom:0}.article-header__meta{font-size:.9375rem;line-height:1.5333333333;font-family:var(--wp--preset--font-family--inter);display:flex;flex-direction:column}.article-header__meta>*{margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__meta>:last-child{margin-bottom:0}.article-header__byline{margin-top:.625rem}.article-header__byline>a{border-bottom:1px dotted var(--cacm--article-header--byline--text-color);color:var(--cacm--article-header--byline--text-color);text-decoration:none}@media(max-width:47.9375rem){.article-header__figure{left:50%;margin-left:-50vw;margin-right:-50vw;position:relative;right:50%;width:100vw}}@media(min-width:48rem){.article-header__figure{display:flex;flex-direction:column}}.article-header__figure .image-wrapper{margin-bottom:var(--wp--custom--vertical-block-rhythm)}.article-header__figure .image-wrapper:last-child{margin-bottom:0}@media(min-width:64rem){.article-header__figure .image-wrapper{grid-column:1/1}}.article-header__figure .image-wrapper>img{-o-object-fit:cover;object-fit:cover}.article-header__figure .video-wrapper{height:100%;overflow:hidden;position:relative;width:100%;padding-bottom:56.25%}.article-header__figure .video-wrapper>iframe{height:100%;left:0;-o-object-fit:contain;object-fit:contain;position:absolute;top:0;width:100%}.article-header__figure .video-wrapper>:not(iframe){display:none}.article-header__figure figcaption{font-size:.9375rem;line-height:1.4666666667;font-family:var(--wp--preset--font-family--inter);color:var(--cacm--article-header--caption--text-color)}@media(max-width:47.9375rem){.article-header__figure figcaption{margin:0 var(--wp--custom--site-edge)}}@media(min-width:64rem){.article-header__figure figcaption{grid-column:2/2;margin:0}}.article-header__figure figcaption>p.article-header--credit{font-style:italic}</style><style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style*=border-color]){border-style:solid}html :where([style*=border-top-color]){border-top-style:solid}html :where([style*=border-right-color]){border-right-style:solid}html :where([style*=border-bottom-color]){border-bottom-style:solid}html :where([style*=border-left-color]){border-left-style:solid}html :where([style*=border-width]){border-style:solid}html :where([style*=border-top-width]){border-top-style:solid}html :where([style*=border-right-width]){border-right-style:solid}html :where([style*=border-bottom-width]){border-bottom-style:solid}html :where([style*=border-left-width]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--color--cacm-blue: #337AB5;--wp--preset--color--cacm-link-blue: #015FAC;--wp--preset--color--cacm-dark-blue: #1E4A88;--wp--preset--color--cacm-darker-blue: #29303C;--wp--preset--color--cacm-light-blue: #B6DEFF;--wp--preset--color--cacm-peach: #F7ACA5;--wp--preset--color--cacm-beige: #F5F2DC;--wp--preset--color--cacm-brown: #8C6A54;--wp--preset--color--cacm-green: #5F7D05;--wp--preset--color--cacm-light-green: #EFF7F1;--wp--preset--color--cacm-black: #141414;--wp--preset--color--cacm-gray-100: #FBFCFC;--wp--preset--color--cacm-gray-200: #F8F9FA;--wp--preset--color--cacm-gray-300: #EBEDEF;--wp--preset--color--cacm-gray-500: #A9ACB1;--wp--preset--color--cacm-gray-600: #5A6875;--wp--preset--color--cacm-gray-700: #3D4550;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--gradient--primary-gradient: linear-gradient(90deg, #80C2EF 0%, #337AB5 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--font-size--work-xxxs: 16px;--wp--preset--font-size--work-xxs: 18px;--wp--preset--font-size--work-xs: 21px;--wp--preset--font-size--work-sm: 25px;--wp--preset--font-size--work-md: 28px;--wp--preset--font-size--work-lg: 33px;--wp--preset--font-size--work-xl: 37px;--wp--preset--font-size--work-xxl: 41px;--wp--preset--font-size--work-xxxl: 48px;--wp--preset--font-size--inter-xxxs: 15px;--wp--preset--font-size--inter-xxs: 18px;--wp--preset--font-size--inter-xs: 21px;--wp--preset--font-size--inter-sm: 24px;--wp--preset--font-size--inter-md: 28px;--wp--preset--font-size--inter-lg: 32px;--wp--preset--font-size--inter-xl: 36px;--wp--preset--font-size--inter-xxl: 41px;--wp--preset--font-size--inter-xxxl: 47px;--wp--preset--font-family--inter: 'Inter', helvetica, arial, sans-serif;--wp--preset--font-family--work-sans: 'Work Sans', helvetica, arial, sans-serif;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);--wp--custom--adminbar-height: 0px;--wp--custom--siteheader-height: 72px;--wp--custom--site-edge: 20px;--wp--custom--gap: 40px;--wp--custom--gap-half: calc(var(--wp--custom--gap) / 2);--wp--custom--section-background-color: transparent;--wp--custom--placeholder-background-color: var(--wp--preset--color--cacm-gray-200);--wp--custom--vertical-block-rhythm: 40px;--wp--custom--border-gray: 1px solid var(--wp--preset--color--cacm-gray-300);--wp--custom--font-weight-regular: 400;--wp--custom--font-weight-medium: 500;--wp--custom--font-weight-bold: 700;--wp--custom--font-weight-extrabold: 900;}.wp-block-heading{--wp--preset--font-size--work-xxs: 18px;--wp--preset--font-size--work-xs: 21px;--wp--preset--font-size--work-sm: 25px;--wp--preset--font-size--work-md: 28px;--wp--preset--font-size--work-lg: 33px;--wp--preset--font-size--work-xl: 41px;}:root { --wp--style--global--content-size: 1280px;--wp--style--global--wide-size: 1280px; }:where(body) { margin: 0; }.wp-site-blocks > .alignleft { float: left; margin-right: 2em; }.wp-site-blocks > .alignright { float: right; margin-left: 2em; }.wp-site-blocks > .aligncenter { justify-content: center; margin-left: auto; margin-right: auto; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}.is-layout-flow > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-flow > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-flow > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignleft{float: left;margin-inline-start: 0;margin-inline-end: 2em;}.is-layout-constrained > .alignright{float: right;margin-inline-start: 2em;margin-inline-end: 0;}.is-layout-constrained > .aligncenter{margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > :where(:not(.alignleft):not(.alignright):not(.alignfull)){max-width: var(--wp--style--global--content-size);margin-left: auto !important;margin-right: auto !important;}.is-layout-constrained > .alignwide{max-width: var(--wp--style--global--wide-size);}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-cacm-blue-color{color: var(--wp--preset--color--cacm-blue) !important;}.has-cacm-link-blue-color{color: var(--wp--preset--color--cacm-link-blue) !important;}.has-cacm-dark-blue-color{color: var(--wp--preset--color--cacm-dark-blue) !important;}.has-cacm-darker-blue-color{color: var(--wp--preset--color--cacm-darker-blue) !important;}.has-cacm-light-blue-color{color: var(--wp--preset--color--cacm-light-blue) !important;}.has-cacm-peach-color{color: var(--wp--preset--color--cacm-peach) !important;}.has-cacm-beige-color{color: var(--wp--preset--color--cacm-beige) !important;}.has-cacm-brown-color{color: var(--wp--preset--color--cacm-brown) !important;}.has-cacm-green-color{color: var(--wp--preset--color--cacm-green) !important;}.has-cacm-light-green-color{color: var(--wp--preset--color--cacm-light-green) !important;}.has-cacm-black-color{color: var(--wp--preset--color--cacm-black) !important;}.has-cacm-gray-100-color{color: var(--wp--preset--color--cacm-gray-100) !important;}.has-cacm-gray-200-color{color: var(--wp--preset--color--cacm-gray-200) !important;}.has-cacm-gray-300-color{color: var(--wp--preset--color--cacm-gray-300) !important;}.has-cacm-gray-500-color{color: var(--wp--preset--color--cacm-gray-500) !important;}.has-cacm-gray-600-color{color: var(--wp--preset--color--cacm-gray-600) !important;}.has-cacm-gray-700-color{color: var(--wp--preset--color--cacm-gray-700) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-cacm-blue-background-color{background-color: var(--wp--preset--color--cacm-blue) !important;}.has-cacm-link-blue-background-color{background-color: var(--wp--preset--color--cacm-link-blue) !important;}.has-cacm-dark-blue-background-color{background-color: var(--wp--preset--color--cacm-dark-blue) !important;}.has-cacm-darker-blue-background-color{background-color: var(--wp--preset--color--cacm-darker-blue) !important;}.has-cacm-light-blue-background-color{background-color: var(--wp--preset--color--cacm-light-blue) !important;}.has-cacm-peach-background-color{background-color: var(--wp--preset--color--cacm-peach) !important;}.has-cacm-beige-background-color{background-color: var(--wp--preset--color--cacm-beige) !important;}.has-cacm-brown-background-color{background-color: var(--wp--preset--color--cacm-brown) !important;}.has-cacm-green-background-color{background-color: var(--wp--preset--color--cacm-green) !important;}.has-cacm-light-green-background-color{background-color: var(--wp--preset--color--cacm-light-green) !important;}.has-cacm-black-background-color{background-color: var(--wp--preset--color--cacm-black) !important;}.has-cacm-gray-100-background-color{background-color: var(--wp--preset--color--cacm-gray-100) !important;}.has-cacm-gray-200-background-color{background-color: var(--wp--preset--color--cacm-gray-200) !important;}.has-cacm-gray-300-background-color{background-color: var(--wp--preset--color--cacm-gray-300) !important;}.has-cacm-gray-500-background-color{background-color: var(--wp--preset--color--cacm-gray-500) !important;}.has-cacm-gray-600-background-color{background-color: var(--wp--preset--color--cacm-gray-600) !important;}.has-cacm-gray-700-background-color{background-color: var(--wp--preset--color--cacm-gray-700) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-cacm-blue-border-color{border-color: var(--wp--preset--color--cacm-blue) !important;}.has-cacm-link-blue-border-color{border-color: var(--wp--preset--color--cacm-link-blue) !important;}.has-cacm-dark-blue-border-color{border-color: var(--wp--preset--color--cacm-dark-blue) !important;}.has-cacm-darker-blue-border-color{border-color: var(--wp--preset--color--cacm-darker-blue) !important;}.has-cacm-light-blue-border-color{border-color: var(--wp--preset--color--cacm-light-blue) !important;}.has-cacm-peach-border-color{border-color: var(--wp--preset--color--cacm-peach) !important;}.has-cacm-beige-border-color{border-color: var(--wp--preset--color--cacm-beige) !important;}.has-cacm-brown-border-color{border-color: var(--wp--preset--color--cacm-brown) !important;}.has-cacm-green-border-color{border-color: var(--wp--preset--color--cacm-green) !important;}.has-cacm-light-green-border-color{border-color: var(--wp--preset--color--cacm-light-green) !important;}.has-cacm-black-border-color{border-color: var(--wp--preset--color--cacm-black) !important;}.has-cacm-gray-100-border-color{border-color: var(--wp--preset--color--cacm-gray-100) !important;}.has-cacm-gray-200-border-color{border-color: var(--wp--preset--color--cacm-gray-200) !important;}.has-cacm-gray-300-border-color{border-color: var(--wp--preset--color--cacm-gray-300) !important;}.has-cacm-gray-500-border-color{border-color: var(--wp--preset--color--cacm-gray-500) !important;}.has-cacm-gray-600-border-color{border-color: var(--wp--preset--color--cacm-gray-600) !important;}.has-cacm-gray-700-border-color{border-color: var(--wp--preset--color--cacm-gray-700) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-primary-gradient-gradient-background{background: var(--wp--preset--gradient--primary-gradient) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}.has-work-xxxs-font-size{font-size: var(--wp--preset--font-size--work-xxxs) !important;}.has-work-xxs-font-size{font-size: var(--wp--preset--font-size--work-xxs) !important;}.has-work-xs-font-size{font-size: var(--wp--preset--font-size--work-xs) !important;}.has-work-sm-font-size{font-size: var(--wp--preset--font-size--work-sm) !important;}.has-work-md-font-size{font-size: var(--wp--preset--font-size--work-md) !important;}.has-work-lg-font-size{font-size: var(--wp--preset--font-size--work-lg) !important;}.has-work-xl-font-size{font-size: var(--wp--preset--font-size--work-xl) !important;}.has-work-xxl-font-size{font-size: var(--wp--preset--font-size--work-xxl) !important;}.has-work-xxxl-font-size{font-size: var(--wp--preset--font-size--work-xxxl) !important;}.has-inter-xxxs-font-size{font-size: var(--wp--preset--font-size--inter-xxxs) !important;}.has-inter-xxs-font-size{font-size: var(--wp--preset--font-size--inter-xxs) !important;}.has-inter-xs-font-size{font-size: var(--wp--preset--font-size--inter-xs) !important;}.has-inter-sm-font-size{font-size: var(--wp--preset--font-size--inter-sm) !important;}.has-inter-md-font-size{font-size: var(--wp--preset--font-size--inter-md) !important;}.has-inter-lg-font-size{font-size: var(--wp--preset--font-size--inter-lg) !important;}.has-inter-xl-font-size{font-size: var(--wp--preset--font-size--inter-xl) !important;}.has-inter-xxl-font-size{font-size: var(--wp--preset--font-size--inter-xxl) !important;}.has-inter-xxxl-font-size{font-size: var(--wp--preset--font-size--inter-xxxl) !important;}.has-inter-font-family{font-family: var(--wp--preset--font-family--inter) !important;}.has-work-sans-font-family{font-family: var(--wp--preset--font-family--work-sans) !important;}.wp-block-heading.has-work-xxs-font-size{font-size: var(--wp--preset--font-size--work-xxs) !important;}.wp-block-heading.has-work-xs-font-size{font-size: var(--wp--preset--font-size--work-xs) !important;}.wp-block-heading.has-work-sm-font-size{font-size: var(--wp--preset--font-size--work-sm) !important;}.wp-block-heading.has-work-md-font-size{font-size: var(--wp--preset--font-size--work-md) !important;}.wp-block-heading.has-work-lg-font-size{font-size: var(--wp--preset--font-size--work-lg) !important;}.wp-block-heading.has-work-xl-font-size{font-size: var(--wp--preset--font-size--work-xl) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='qm-object-cache-style-css' href='https://cacm.acm.org/wp-content/mu-plugins/qm-plugins/qm-object-cache/css/style.css?ver=0.2' media='all' />
+<link rel='stylesheet' id='cacm-global-css' href='https://cacm.acm.org/wp-content/themes/cacm/client/build/css/global.min.css?ver=cdacb417d67561b7c029' media='all' />
+<link rel='stylesheet' id='cacm-article-css' href='https://cacm.acm.org/wp-content/themes/cacm/client/build/css/article.min.css?ver=2729ebb131a187806776' media='all' />
+<link rel="https://api.w.org/" href="https://cacm.acm.org/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://cacm.acm.org/wp-json/wp/v2/digital-library/125722" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://cacm.acm.org/xmlrpc.php?rsd" />
+<meta name="generator" content="WordPress 7.0.4" />
+<link rel="canonical" href="https://cacm.acm.org/research/the-go-programming-language-and-environment/" />
+<link rel='shortlink' href='https://cacm.acm.org/?p=125722' />
+        <style>
+        .getty.aligncenter {
+            text-align: center;
+        }
+        .getty.alignleft {
+            float: none;
+            margin-right: 0;
+        }
+        .getty.alignleft > div {
+            float: left;
+            margin-right: 5px;
+        }
+        .getty.alignright {
+            float: none;
+            margin-left: 0;
+        }
+        .getty.alignright > div {
+            float: right;
+            margin-left: 5px;
+        }
+        </style>
+        	<style>img#wpstats{display:none}</style>
+		<script type="application/ld+json" class="wp-parsely-metadata">{"@context":"https:\/\/schema.org","@type":"NewsArticle","headline":"The Go Programming Language and Environment","url":"http:\/\/cacm.acm.org\/research\/the-go-programming-language-and-environment\/","mainEntityOfPage":{"@type":"WebPage","@id":"http:\/\/cacm.acm.org\/research\/the-go-programming-language-and-environment\/"},"thumbnailUrl":"https:\/\/cacm.acm.org\/wp-content\/uploads\/2022\/05\/041822_CACMpg71_The-Go.jpg?w=150&h=150&crop=1","image":{"@type":"ImageObject","url":"https:\/\/cacm.acm.org\/wp-content\/uploads\/2022\/05\/041822_CACMpg71_The-Go.jpg"},"articleSection":"Architecture and Hardware","author":[{"@type":"Person","name":"Russ Cox","url":"https:\/\/cacm.acm.org\/author\/russ-cox\/"},{"@type":"Person","name":"Robert Griesemer","url":"https:\/\/cacm.acm.org\/author\/robert-griesemer\/"},{"@type":"Person","name":"Rob Pike","url":"https:\/\/cacm.acm.org\/author\/rob-pike\/"},{"@type":"Person","name":"Ian Lance Taylor","url":"https:\/\/cacm.acm.org\/author\/ian-lance-taylor\/"},{"@type":"Person","name":"Ken Thompson","url":"https:\/\/cacm.acm.org\/author\/ken-thompson\/"}],"creator":["Russ Cox","Robert Griesemer","Rob Pike","Ian Lance Taylor","Ken Thompson"],"publisher":{"@type":"Organization","name":"Communications of the ACM","logo":""},"keywords":[],"dateCreated":"2022-05-01T05:00:00Z","datePublished":"2022-05-01T05:00:00Z","dateModified":"2023-09-01T14:00:45Z"}</script><link rel="icon" href="https://cacm.acm.org/wp-content/uploads/2023/11/cropped-cropped-cacm_favicon-1.png?w=32" sizes="32x32" />
+<link rel="icon" href="https://cacm.acm.org/wp-content/uploads/2023/11/cropped-cropped-cacm_favicon-1.png?w=192" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://cacm.acm.org/wp-content/uploads/2023/11/cropped-cropped-cacm_favicon-1.png?w=180" />
+<meta name="msapplication-TileImage" content="https://cacm.acm.org/wp-content/uploads/2023/11/cropped-cropped-cacm_favicon-1.png?w=270" />
+</head>
+
+<body class="wp-singular digital-library-template-default single single-digital-library postid-125722 wp-theme-cacm">
+<script id='jetpack-search-theme-token-sampler'>(function(){try{var c=getComputedStyle(document.body),r=document.documentElement,ink=c.color,bg=c.backgroundColor;if(ink){r.style.setProperty('--jp-search-page-ink',ink);}if(bg&&bg!==ink&&bg!=='rgba(0, 0, 0, 0)'&&bg!=='transparent'){r.style.setProperty('--jp-search-page-surface',bg);}}catch(e){}})();</script><svg xmlns="http://www.w3.org/2000/svg" focusable="false" height="0" role="none" style="left:-9999px;overflow:hidden;position:absolute" viewbox="0 0 0 0" width="0"><symbol id="am-symbol-icon-arrow-left" viewbox="0 0 18 12"><path clip-rule="evenodd" d="M18 6a.643.643 0 0 1-.643.643H2.196l4.046 4.044a.644.644 0 0 1-.91.91L.188 6.456a.643.643 0 0 1 0-.91L5.33.402a.644.644 0 1 1 .91.91L2.197 5.358h15.161A.643.643 0 0 1 18 6Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-arrow-right" viewbox="0 0 14 9"><path clip-rule="evenodd" d="M0 4.5A.5.5 0 0 1 .5 4h11.793L9.146.854a.5.5 0 1 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 1 1-.708-.708L12.293 5H.5a.5.5 0 0 1-.5-.5Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-comment" viewbox="0 0 19 20"><path clip-rule="evenodd" d="M1.781 1.542a.693.693 0 0 0-.693.693v11.876a.693.693 0 0 0 .693.693h2.375c.273 0 .494.221.494.494v2.574l3.96-2.97a.494.494 0 0 1 .296-.098h8.313a.693.693 0 0 0 .693-.694V2.236a.693.693 0 0 0-.693-.693H1.78ZM.592 1.046a1.681 1.681 0 0 1 1.19-.492h15.437A1.681 1.681 0 0 1 18.9 2.235v11.876a1.681 1.681 0 0 1-1.681 1.681H9.07l-4.618 3.464a.494.494 0 0 1-.79-.396v-3.068H1.78A1.682 1.682 0 0 1 .1 14.111V2.235c0-.446.177-.873.492-1.189Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-digital-library" viewbox="43 0 40 40"><g clip-path="url(#a)">
+    <path d="m95.468 15.585-1.58 1.579c-.262.263-.584.41-.964.41h-6.813V4.707h6.813c.38 0 .702.146.965.409l1.579 1.579c.263.263.41.585.41.965v6.959c0 .38-.118.702-.41.965zm-1.9-7.544c0-.088-.03-.205-.118-.263l-.76-.76c-.088-.088-.146-.117-.263-.117H88.42v8.45h4.006c.117 0 .205-.03.263-.117l.76-.76a.357.357 0 0 0 .117-.264V8.04zm5.877 9.532v-2.047h2.309V6.754h-2.31V4.708h6.93v2.046h-2.31v8.772h2.31v2.047h-6.93zm19.853 0-.292-1.637-1.228 1.228c-.263.263-.585.41-.965.41h-3.918c-.38 0-.702-.147-.965-.41l-1.579-1.58a1.326 1.326 0 0 1-.409-.964V7.66c0-.38.146-.7.409-.964l1.579-1.579c.263-.263.585-.41.965-.41h5c.38 0 .701.147.965.41l1.666 1.667-1.549 1.55-1.316-1.316c-.088-.088-.146-.117-.263-.117h-4.006c-.117 0-.205.029-.263.117l-.761.76a.36.36 0 0 0-.117.263v6.199c0 .088.03.204.117.263l.761.76c.087.088.146.117.263.117h3.041c.117 0 .204-.03.263-.117l1.754-1.754c.088-.088.117-.146.117-.263v-.995h-3.187V10.06h5.497v4.97l.497 2.573h-2.076v-.029zm5.38 0v-2.047h2.31V6.754h-2.31V4.708h6.93v2.046h-2.31v8.772h2.31v2.047h-6.93zM140.029 6.9v10.644h-2.31V6.9h-3.713V4.708h9.737V6.9h-3.714zm14.299 10.673-1.229-3.216h-5.117l-1.228 3.216h-2.31l4.767-12.865h2.748l4.708 12.865h-2.339zm-3.772-10.38-1.784 5.088h3.567l-1.783-5.088zM160 17.573V4.708h2.31V15.35h6.316v2.193H160v.03zM86.111 35.41V22.543h2.31v10.643h6.316v2.193H86.11v.03zm11.813 0v-2.047h2.31V24.59h-2.31v-2.047h6.93v2.047h-2.31v8.772h2.31v2.046h-6.93zm20.497-1.638-1.257 1.257a1.28 1.28 0 0 1-.936.38h-7.164V22.544h7.164c.38 0 .673.146.936.38l1.257 1.257c.263.263.409.585.409.965v1.755c0 .38-.146.701-.409.965l-1.111 1.11 1.111 1.112c.263.263.409.584.409.965v1.783c0 .322-.146.673-.409.936zm-1.901-8.216c0-.117-.029-.205-.116-.264l-.439-.438c-.088-.088-.146-.117-.263-.117h-4.328v3.129h3.86c.088 0 .205-.03.263-.117l.877-.878c.088-.087.117-.146.117-.263v-1.052h.029zm0 5.789c0-.117-.029-.205-.116-.263l-.936-.936c-.088-.088-.146-.117-.263-.117h-3.831v3.158h4.328c.087 0 .204-.03.263-.117l.439-.438c.087-.088.116-.147.116-.264v-1.023zm14.65 4.065-3.802-4.884a.402.402 0 0 0-.321-.175h-1.404v5.058h-2.31V22.544h7.164c.38 0 .673.146.936.38l1.257 1.257c.263.263.409.585.409.965v2.544c0 .38-.146.702-.409.965l-1.257 1.257c-.263.263-.556.38-.936.38h-.468l3.977 5.059h-2.836v.058zm-.381-9.854c0-.117-.029-.205-.116-.264l-.439-.438c-.088-.088-.146-.117-.263-.117h-4.328v3.392h4.328c.117 0 .204-.03.263-.117l.439-.41c.087-.087.116-.146.116-.263v-1.783zm15.117 9.854-1.228-3.217h-5.117l-1.228 3.216h-2.31l4.766-12.865h2.749l4.708 12.865h-2.34zm-3.772-10.38-1.783 5.087h3.538l-1.755-5.088zm17.106 10.38-3.801-4.884a.405.405 0 0 0-.322-.175h-1.404v5.058h-2.309V22.544h7.163c.38 0 .673.146.936.38l1.257 1.257c.263.263.41.585.41.965v2.544c0 .38-.147.702-.41.965l-1.257 1.257c-.263.263-.556.38-.936.38h-.468l3.977 5.059h-2.836v.058zm-.41-9.854c0-.117-.029-.205-.117-.264l-.438-.438c-.088-.088-.146-.117-.263-.117h-4.328v3.392h4.328c.117 0 .204-.03.263-.117l.438-.41c.088-.087.117-.146.117-.263v-1.783zm11.696 4.152v5.672h-2.31v-5.672l-4.356-7.164h2.514l3.012 5 2.982-5h2.486l-4.328 7.164zM12.193 26.199 7.485 13.363H4.737L0 26.199h2.31l1.199-3.216h5.117l1.199 3.216h2.368zm-4.327-5.263h-3.54l1.784-5.088 1.755 5.088zm15.818 3.187-1.55-1.55-1.315 1.316c-.088.088-.146.117-.263.117h-3.188c-.116 0-.204-.03-.263-.117l-.76-.76a.357.357 0 0 1-.117-.264v-6.17c0-.087.03-.204.117-.262l.76-.76c.088-.088.146-.117.263-.117h3.188c.116 0 .204.029.263.117l1.316 1.315 1.55-1.55-1.668-1.666a1.326 1.326 0 0 0-.964-.41H16.87c-.38 0-.701.147-.965.41l-1.579 1.579a1.326 1.326 0 0 0-.409.965v6.959c0 .38.146.702.41.965l1.578 1.579c.264.263.585.41.965.41h4.182c.38 0 .701-.147.964-.41l1.667-1.696zm15.79 2.076V13.363h-3.538l-3.041 9.941-3.041-9.941h-3.538v12.836h2.251V15.994L31.696 26.2h2.398l3.128-10.205V26.2h2.252zM58.246 3.421l-5.351-1.403-1.404 5.35 3.86-1.052 2.895-2.895zm-4.474 4.532-7.72 2.106 1.17 4.385 6.55-6.49zm26.17 6.988 1.432-5.467-5.35-1.375 1.081 4.065 2.837 2.777zm-33.1 10.205-1.433 5.38 5.351 1.375-1.052-3.89-2.866-2.865zM73.333 2.66 68.89 3.89l6.579 6.579-2.135-7.807zm-.409 29.416 7.836-2.134-1.228-4.474-6.608 6.608zM68.45 36.55l5.468 1.433 1.404-5.351-4.065 1.081-2.807 2.837zm-15 .79 4.386-1.17-6.462-6.492 2.076 7.661zm26.2-13.656L83.332 20 71.637 8.304l-4.561-4.561L63.333 0l-6.52 6.52-9.708 9.708L43.333 20l6.58 6.579 9.707 9.707L63.333 40l6.492-6.491 9.824-9.825zm-16.434-.643c0 .35-.117.672-.38.906l-1.491 1.492c-.263.263-.556.38-.906.38h-6.462V13.626h6.462c.35 0 .672.117.906.38l1.491 1.491c.263.263.38.556.38.907v6.637zm3.597-9.415h2.193v10.117H75v2.076h-8.187V13.626z"></path>
+    <path d="M60.205 15.819a.37.37 0 0 0-.264-.117h-3.8v8.04h3.8c.117 0 .176-.029.264-.116l.701-.702c.059-.088.117-.175.117-.263v-5.877a.357.357 0 0 0-.117-.264l-.701-.701z"></path>
+  </g><defs>
+    <clipPath id="a">
+      <path d="M0 0h174.854v40H0z"></path>
+    </clipPath>
+  </defs></symbol><symbol id="am-symbol-icon-pdf-download" viewbox="0 0 19 20"><path clip-rule="evenodd" d="M1.781 1.542a.693.693 0 0 0-.693.693v13.063a.693.693 0 0 0 .693.694h4.75a.494.494 0 1 1 0 .988h-4.75A1.682 1.682 0 0 1 .1 15.298V2.235A1.681 1.681 0 0 1 1.78.554h8.415c.446 0 .873.177 1.188.492l2.274 2.274c.315.315.492.743.492 1.188v2.477a.494.494 0 1 1-.988 0V4.508a.694.694 0 0 0-.203-.49m0 0-2.273-2.273a.694.694 0 0 0-.49-.203H1.78m11.875 8.312a4.256 4.256 0 1 0 0 8.512 4.256 4.256 0 0 0 0-8.512Zm-5.244 4.257a5.244 5.244 0 1 1 10.488 0 5.244 5.244 0 0 1-10.488 0Zm5.244-2.87c.273 0 .494.222.494.495v3.557l.938-.938a.494.494 0 0 1 .699.698l-1.782 1.782a.494.494 0 0 1-.698 0l-1.781-1.782a.494.494 0 0 1 .698-.698l.938.938v-3.557c0-.273.221-.495.494-.495Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-print" viewbox="0 0 19 20"><path clip-rule="evenodd" d="M5.344 1.541a.693.693 0 0 0-.694.693v3.069h9.7V2.234a.693.693 0 0 0-.694-.693H5.344Zm9.994 3.762V2.234A1.681 1.681 0 0 0 13.656.553H5.344a1.681 1.681 0 0 0-1.682 1.681v3.069h-1.88A1.682 1.682 0 0 0 .1 6.984v5.938a1.682 1.682 0 0 0 1.681 1.681h1.881v4.257c0 .272.221.494.494.494h10.688a.494.494 0 0 0 .494-.494v-4.256h1.88a1.682 1.682 0 0 0 1.682-1.682V6.984a1.681 1.681 0 0 0-1.681-1.681h-1.881ZM1.78 6.291a.693.693 0 0 0-.693.693v5.938a.694.694 0 0 0 .693.694h1.881v-3.069c0-.273.221-.494.494-.494h10.688c.273 0 .494.221.494.494v3.069h1.88a.694.694 0 0 0 .694-.694V6.984a.693.693 0 0 0-.693-.693H1.78Zm12.569 4.75h-9.7v7.325h9.7V11.04ZM2.475 8.172c0-.273.22-.494.494-.494h1.187a.494.494 0 1 1 0 .988H2.97a.494.494 0 0 1-.494-.494Zm3.562 4.75c0-.273.221-.494.494-.494h5.938a.494.494 0 1 1 0 .988H6.53a.494.494 0 0 1-.494-.494Zm0 2.375c0-.273.221-.494.494-.494h4.157a.494.494 0 1 1 0 .988H6.53a.494.494 0 0 1-.494-.494Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-share" viewbox="0 0 19 18"><path clip-rule="evenodd" d="M14.844 1.73a2.475 2.475 0 1 0 0 4.949 2.475 2.475 0 0 0 0-4.95ZM11.38 4.203a3.463 3.463 0 1 1 .447 1.703L7.531 7.58a3.473 3.473 0 0 1-.087 1.873l4.555 2.278a3.463 3.463 0 1 1-.442.883L7 10.335a3.463 3.463 0 1 1 .171-3.677l4.298-1.671a3.473 3.473 0 0 1-.089-.783Zm1.242 8.407a2.475 2.475 0 1 0 4.441 2.187 2.475 2.475 0 0 0-4.44-2.187ZM4.156 5.886a2.475 2.475 0 1 0 0 4.95 2.475 2.475 0 0 0 0-4.95Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-bookmark" viewbox="0 0 13 19"><path clip-rule="evenodd" d="M12.05.948c-.293-.32-.7-.494-1.114-.494H2.007c-.421 0-.821.175-1.121.494a1.73 1.73 0 0 0-.457 1.186v15.488c0 .198.05.388.142.563.1.167.236.304.408.395a.89.89 0 0 0 .535.122.956.956 0 0 0 .522-.19l2.464-1.84h.007l1.964-1.459 1.958 1.46h.014l2.464 1.839c.15.114.329.182.522.19a.89.89 0 0 0 .535-.122 1.03 1.03 0 0 0 .4-.395c.1-.175.15-.365.15-.563V2.134c0-.449-.164-.874-.464-1.186ZM3.771 16.011 1.5 17.7s-.029.015-.05.022c-.014 0-.029-.007-.043-.015-.021-.008-.028-.023-.043-.038-.007-.015-.007-.03-.007-.053V2.134a.74.74 0 0 1 .186-.494.639.639 0 0 1 .464-.198h1.764v14.57Zm4.465-.691-1.5-1.125a.462.462 0 0 0-.536 0L4.7 15.32V1.442h3.536V15.32Zm3.35 2.378v-.053s-.015.015-.015.023a.089.089 0 0 1-.035.038c-.015 0-.036.015-.05.015-.015-.007-.036-.007-.05-.023l-2.272-1.687V1.442h1.772c.171 0 .335.069.457.198a.747.747 0 0 1 .193.494v15.564Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-bookmarked" viewbox="0 0 17 25"><path clip-rule="evenodd" d="M16.27.65C15.86.23 15.29 0 14.71 0H2.21A2.201 2.201 0 0 0 0 2.21v20.38c0 .26.07.51.2.74.14.22.33.4.57.52.23.13.49.18.75.16.26-.01.51-.1.73-.25l3.45-2.42h.01l1.15-.8 1.6-1.12 1.6 1.12 1.14.8h.02l3.45 2.42c.21.15.46.24.73.25.26.02.52-.03.75-.16.23-.12.43-.3.56-.52.14-.23.21-.48.21-.74V2.21c0-.59-.23-1.15-.65-1.56ZM4.68 20.47 1.5 22.69s-.04.02-.07.03c-.02 0-.04-.01-.06-.02-.03-.01-.04-.03-.06-.05V2.21c0-.24.09-.47.26-.65.17-.17.41-.26.65-.26h2.47v19.17h-.01Zm10.94 2.22v-.07s-.02.02-.02.03a.12.12 0 0 1-.05.05c-.02 0-.05.02-.07.02-.02-.01-.05-.01-.07-.03l-3.18-2.22V1.3h2.48a.9.9 0 0 1 .64.26c.17.18.27.41.27.65v20.48Z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-chevron-down" viewbox="0 0 16 16"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" fill-rule="evenodd"></path></symbol><symbol id="am-symbol-icon-search" viewbox="0 0 24 24"><path d="m23 21.85-6.145-6.146a8.966 8.966 0 1 0-1.151 1.15L21.849 23 23 21.85ZM2.656 9.98a7.324 7.324 0 1 1 7.324 7.324A7.332 7.332 0 0 1 2.656 9.98Z" fill="#015FAC"></path></symbol><symbol id="am-symbol-cacm-logo-small"><path d="M48.75 24c0 13.255-10.745 24-24 24s-24-10.745-24-24 10.745-24 24-24 24 10.745 24 24Z" fill="#fff"></path><path d="m24.998 9-15 15 15 15 15-15-15-15Z" fill="#027BA3"></path><path d="M34.196 24A9.195 9.195 0 0 1 25 33.196 9.195 9.195 0 0 1 15.804 24 9.195 9.195 0 0 1 25 14.804 9.195 9.195 0 0 1 34.196 24Z" fill="#fff"></path><path d="M33.28 24A8.275 8.275 0 0 1 25 32.275 8.275 8.275 0 0 1 16.72 24c0-4.57 3.705-8.28 8.28-8.28A8.276 8.276 0 0 1 33.28 24Z" fill="#027BA3"></path><path d="M20.18 25.613c-.084.07-.163.133-.23.191a1.641 1.641 0 0 1-.596.292c-.104.025-.25.041-.441.041-.35 0-.642-.116-.875-.354a1.219 1.219 0 0 1-.35-.891c0-.296.058-.534.175-.717.116-.183.287-.325.508-.433.225-.109.492-.184.804-.225.313-.042.646-.075 1.004-.1v-.021c0-.221-.083-.371-.241-.454-.163-.084-.405-.125-.73-.125-.145 0-.316.025-.512.079s-.388.12-.571.204h-.104v-.967c.12-.037.32-.079.596-.125.275-.05.55-.075.829-.075.687 0 1.187.117 1.5.342.312.23.47.575.47 1.046v2.712h-1.241v-.42h.004Zm0-.621v-.825c-.21.02-.38.041-.505.054-.13.017-.258.046-.38.091a.561.561 0 0 0-.253.171.488.488 0 0 0-.088.305c0 .187.05.312.15.383.1.07.246.104.442.104a.802.802 0 0 0 .329-.075c.113-.05.212-.12.304-.208ZM24.154 26.137c-.329 0-.633-.041-.904-.125a1.897 1.897 0 0 1-.712-.383c-.2-.17-.355-.387-.467-.65a2.336 2.336 0 0 1-.167-.925c0-.379.058-.704.183-.97.121-.267.284-.488.492-.659.2-.167.433-.288.7-.367a2.98 2.98 0 0 1 1.504-.046c.221.05.442.134.667.242v1.067h-.158c-.05-.046-.113-.1-.184-.154a1.673 1.673 0 0 0-.237-.159 1.349 1.349 0 0 0-.683-.175c-.317 0-.563.109-.738.33-.175.22-.262.516-.262.891 0 .4.091.696.279.892.187.196.433.296.741.296.155 0 .296-.017.413-.055a1.27 1.27 0 0 0 .517-.28c.058-.049.112-.099.154-.14h.158v1.062l-.246.108a2.925 2.925 0 0 1-.629.175 2.776 2.776 0 0 1-.417.026h-.004ZM30.867 26.033v-1.991c0-.196 0-.363-.013-.496a1.102 1.102 0 0 0-.062-.33.386.386 0 0 0-.167-.187.715.715 0 0 0-.317-.058.665.665 0 0 0-.279.062 1.99 1.99 0 0 0-.304.175v2.83h-1.242v-1.992c0-.192 0-.358-.012-.496a1 1 0 0 0-.067-.333.386.386 0 0 0-.166-.188.707.707 0 0 0-.313-.058c-.1 0-.2.025-.3.07-.096.05-.192.105-.283.167v2.83H26.1v-3.984h1.242v.438c.204-.175.396-.309.575-.405a1.27 1.27 0 0 1 .604-.145c.246 0 .458.058.642.175.183.116.325.287.42.516.238-.22.467-.391.675-.512.213-.121.425-.18.642-.18.183 0 .35.03.496.088.146.058.27.146.37.267.113.129.197.279.25.454.055.175.084.408.084.692v2.596h-1.242l.009-.005Z" fill="#fff"></path></symbol><symbol id="am-symbol-cacm-logo" viewbox="30.79 34.55 548.86 88.05"><path d="M54.75 71.41c-.8.8-1.77 1.2-2.85 1.2H39.52c-1.08 0-2.05-.4-2.85-1.2l-4.68-4.68c-.8-.8-1.2-1.77-1.2-2.85v-20.6c0-1.08.4-2.05 1.2-2.85l4.68-4.68c.8-.8 1.77-1.2 2.85-1.2H51.9c1.08 0 2.05.4 2.85 1.2l4.96 4.96-4.62 4.56-3.88-3.88c-.23-.23-.46-.34-.8-.34H41c-.34 0-.57.11-.8.34l-2.23 2.23c-.23.23-.34.51-.34.8v18.31c0 .29.11.57.34.8l2.23 2.23c.23.23.46.34.8.34h9.41c.34 0 .57-.11.8-.34l3.88-3.88 4.62 4.56-4.96 4.97zm44.5-4.68-4.68 4.68c-.8.8-1.77 1.2-2.85 1.2H76.83c-1.08 0-2.05-.4-2.85-1.2l-4.68-4.68c-.8-.8-1.2-1.77-1.2-2.85v-20.6c0-1.08.4-2.05 1.2-2.85l4.68-4.68c.8-.8 1.77-1.2 2.85-1.2h14.89c1.08 0 2.05.4 2.85 1.2l4.68 4.68c.8.8 1.2 1.77 1.2 2.85v20.6c0 1.08-.4 2.05-1.2 2.85zM93.6 44.42c0-.29-.11-.57-.34-.8l-2.23-2.23c-.23-.23-.46-.34-.8-.34H78.31c-.34 0-.57.11-.8.34l-2.23 2.23c-.23.23-.34.51-.34.8v18.31c0 .29.11.57.34.8l2.23 2.23c.23.23.46.34.8.34h11.92c.34 0 .57-.11.8-.34l2.23-2.23c.23-.23.34-.51.34-.8V44.42zm50.44 28.19V42.37l-9.3 30.24h-7.07l-9.3-30.24v30.24h-6.68V34.55h10.5l9.01 29.5 9.01-29.5h10.5V72.6h-6.67zm52.65 0V42.37l-9.3 30.24h-7.07l-9.3-30.24v30.24h-6.68V34.55h10.5l9.01 29.5 9.01-29.5h10.5V72.6h-6.67zm46.66-5.88-4.68 4.68c-.8.8-1.77 1.2-2.85 1.2h-11.47c-1.08 0-2.05-.4-2.85-1.2l-4.68-4.68c-.8-.8-1.2-1.77-1.2-2.85V34.55h6.85v28.18c0 .29.11.57.34.8l2.23 2.23c.23.23.46.34.8.34h8.5c.34 0 .57-.11.8-.34l2.23-2.23c.23-.23.34-.51.34-.8V34.55h6.85v29.33c-.01 1.08-.41 2.05-1.21 2.85zm32.69 5.88-12.55-29.5v29.5h-6.67V34.55h9.7l12.55 29.5v-29.5h6.67V72.6h-9.7zm20.82 0v-6.05h6.85V40.6h-6.85v-6.05h20.54v6.05h-6.85v25.96h6.85v6.05h-20.54zm53.46-1.2c-.8.8-1.77 1.2-2.85 1.2h-12.38c-1.08 0-2.05-.4-2.85-1.2l-4.68-4.68c-.8-.8-1.2-1.77-1.2-2.85v-20.6c0-1.08.4-2.05 1.2-2.85l4.68-4.68c.8-.8 1.77-1.2 2.85-1.2h12.38c1.08 0 2.05.4 2.85 1.2l4.96 4.96-4.62 4.56-3.88-3.88c-.23-.23-.46-.34-.8-.34h-9.41c-.34 0-.57.11-.8.34l-2.22 2.23c-.23.23-.34.51-.34.8v18.31c0 .29.11.57.34.8l2.22 2.23c.23.23.46.34.8.34h9.41c.34 0 .57-.11.8-.34l3.88-3.88 4.62 4.56-4.96 4.97zm39.47 1.2-3.59-9.53h-15.18l-3.6 9.53h-6.85l14.09-38.05h8.1l13.98 38.05h-6.95zm-11.18-30.7-5.25 15.06h10.5l-5.25-15.06zm35.94-.85v31.55h-6.85V41.06h-11.01v-6.5h28.87v6.5h-11.01zm19.27 31.55v-6.05h6.85V40.6h-6.85v-6.05h20.54v6.05h-6.85v25.96h6.85v6.05h-20.54zm61.89-5.88-4.68 4.68c-.8.8-1.77 1.2-2.85 1.2h-14.89c-1.08 0-2.05-.4-2.85-1.2l-4.68-4.68c-.8-.8-1.2-1.77-1.2-2.85v-20.6c0-1.08.4-2.05 1.2-2.85l4.68-4.68c.8-.8 1.77-1.2 2.85-1.2h14.89c1.08 0 2.05.4 2.85 1.2l4.68 4.68c.8.8 1.2 1.77 1.2 2.85v20.6c0 1.08-.4 2.05-1.2 2.85zm-5.64-22.31c0-.29-.11-.57-.34-.8l-2.22-2.23c-.23-.23-.46-.34-.8-.34h-11.92c-.34 0-.57.11-.8.34l-2.22 2.23c-.23.23-.34.51-.34.8v18.31c0 .29.12.57.34.8l2.22 2.23c.23.23.46.34.8.34h11.92c.34 0 .57-.11.8-.34l2.22-2.23c.23-.23.34-.51.34-.8V44.42zm37.65 28.19-12.55-29.5v29.5h-6.68V34.55h9.7l12.55 29.5v-29.5h6.68V72.6h-9.7zm50.72-5.88-4.68 4.68c-.8.8-1.77 1.2-2.85 1.2h-15.92c-1.08 0-2.05-.4-2.85-1.2l-4.85-4.85 4.56-4.62 3.82 3.82c.23.23.46.34.8.34h12.95c.34 0 .57-.11.8-.34l2.22-2.23c.23-.23.34-.51.34-.8v-3.65c0-.57-.51-1.08-1.08-1.14l-20.48-2.74c-2.23-.29-3.94-2.28-3.94-4.45v-7.47c0-1.08.4-2.05 1.2-2.85l4.68-4.68c.8-.8 1.77-1.2 2.85-1.2h15.92c1.08 0 2.05.4 2.85 1.2l4.85 4.85-4.56 4.62-3.82-3.82c-.23-.23-.46-.34-.8-.34H557.5c-.34 0-.57.11-.8.34l-2.22 2.23c-.23.23-.34.51-.34.8v3.65c0 .57.46 1.08 1.03 1.14l20.54 2.74c2.22.29 3.94 2.28 3.94 4.45v7.47c-.01 1.08-.41 2.05-1.21 2.85zM263.05 90.51l-.88.88c-.15.15-.33.22-.54.22h-2.79a.79.79 0 0 1-.54-.22l-.88-.88a.732.732 0 0 1-.22-.54v-3.86c0-.2.07-.38.22-.54l.88-.88c.15-.15.33-.22.54-.22h2.79c.2 0 .39.07.54.22l.88.88c.15.15.22.33.22.54v3.86c0 .2-.07.39-.22.54zm-1.06-4.19a.22.22 0 0 0-.06-.15l-.42-.42a.204.204 0 0 0-.15-.06h-2.24c-.06 0-.11.02-.15.06l-.42.42a.22.22 0 0 0-.06.15v3.43c0 .05.02.11.06.15l.42.42c.04.04.09.06.15.06h2.24c.06 0 .11-.02.15-.06l.42-.42c.04-.04.06-.1.06-.15v-3.43zm5.41 2.33v2.96h-1.28v-7.13h4.78v1.22h-3.5v1.73h3.5v1.22h-3.5zm12.04-2.96v5.92h-1.28v-5.92h-2.06v-1.22h5.41v1.22h-2.07zm8.45 5.92v-2.96h-2.86v2.96h-1.28v-7.13h1.28v2.95h2.86v-2.95h1.28v7.13h-1.28zm4.43 0v-7.13h4.78v1.22h-3.5v1.73h3.5v1.22h-3.5v1.74h3.5v1.22h-4.78zm30.16 30.99-3.59-9.53h-15.18l-3.59 9.53h-6.85l14.09-38.05h8.1l13.98 38.05h-6.96zM311.3 91.91l-5.25 15.06h10.5l-5.25-15.06zm49.12 29.49c-.8.8-1.77 1.2-2.85 1.2h-12.38c-1.08 0-2.05-.4-2.85-1.2l-4.68-4.68c-.8-.8-1.2-1.77-1.2-2.85v-20.6c0-1.08.4-2.05 1.2-2.85l4.68-4.68c.8-.8 1.77-1.2 2.85-1.2h12.38c1.08 0 2.05.4 2.85 1.2l4.96 4.96-4.62 4.56-3.88-3.88c-.23-.23-.46-.34-.8-.34h-9.41c-.34 0-.57.11-.8.34l-2.22 2.23c-.23.23-.34.51-.34.8v18.31c0 .29.12.57.34.8l2.22 2.23c.23.23.46.34.8.34h9.41c.34 0 .57-.12.8-.34l3.88-3.88 4.62 4.56-4.96 4.97zm47.51 1.2V92.36l-9.3 30.24h-7.07l-9.3-30.24v30.24h-6.68V84.55h10.5l9.01 29.5 9.01-29.5h10.5v38.05h-6.67z"></path></symbol><symbol id="am-symbol-icon-social-facebook"><path d="m22.723 20 .445-2.896h-2.779v-1.879c0-.792.388-1.564 1.633-1.564h1.263v-2.465S22.139 11 21.043 11c-2.289 0-3.784 1.387-3.784 3.898v2.206h-2.544V20h2.544v7h3.13v-7h2.334Z"></path></symbol><symbol id="am-symbol-icon-social-twitter"><path d="M27.613 13.657a7.057 7.057 0 0 1-2.03.557 3.54 3.54 0 0 0 1.555-1.955 7.08 7.08 0 0 1-2.245.857A3.53 3.53 0 0 0 22.313 12c-2.282 0-3.958 2.13-3.442 4.34a10.033 10.033 0 0 1-7.285-3.694 3.54 3.54 0 0 0 1.093 4.72 3.52 3.52 0 0 1-1.6-.442c-.038 1.637 1.135 3.169 2.835 3.51a3.542 3.542 0 0 1-1.596.06 3.538 3.538 0 0 0 3.301 2.454 7.106 7.106 0 0 1-5.232 1.465A10.006 10.006 0 0 0 15.804 26c6.562 0 10.27-5.542 10.046-10.513a7.195 7.195 0 0 0 1.763-1.83Z"></path></symbol><symbol id="am-symbol-icon-social-linkedin"><path d="M14.117 12.74c0 .96-.773 1.738-1.726 1.738a1.732 1.732 0 0 1-1.725-1.739c0-.96.772-1.739 1.725-1.739.953 0 1.726.78 1.726 1.74Zm.013 3.13h-3.478V27h3.479V15.87Zm5.553 0h-3.456V27h3.457v-5.843c0-3.248 4.194-3.514 4.194 0V27h3.47v-7.048c0-5.481-6.207-5.282-7.665-2.583v-1.5Z"></path></symbol><symbol id="am-symbol-icon-social-reddit"><path d="M27.764 21.071v.613c0 3.368-3.879 6.022-8.676 6.022-4.797 0-8.676-2.654-8.676-6.022v-.613c-1.122-.51-1.53-1.735-1.122-2.857.306-.817 1.123-1.327 1.939-1.225.612 0 1.123.204 1.531.612 1.735-1.122 3.776-1.837 5.818-1.837l1.122-5.103c0-.102.102-.204.102-.204.102-.102.205-.102.307-.102l3.572.816c.408-.714 1.327-1.123 2.041-.714.715.408 1.123 1.326.715 2.04-.409.715-1.327 1.124-2.042.715-.51-.204-.816-.714-.816-1.326l-3.164-.715-1.02 4.593c2.245.102 4.286.817 5.715 1.837.816-.816 2.245-.816 3.062 0 .408.408.612.919.612 1.531.306.919-.306 1.633-1.02 1.94Zm-11.942 1.123c.816 0 1.53-.714 1.53-1.53 0-.817-.714-1.532-1.53-1.532-.817 0-1.531.715-1.531 1.531 0 .817.612 1.531 1.53 1.531Zm7.042 1.94c-.204-.205-.408-.205-.51 0-.612.714-2.041.918-3.062.918-1.02 0-2.45-.204-3.062-.919-.204-.204-.408-.204-.51 0-.204.204-.204.409 0 .51 1.02 1.021 3.062 1.123 3.674 1.123.613 0 2.552-.102 3.675-1.122-.102-.102-.102-.306-.205-.51Zm1.225-3.47c0-.817-.714-1.532-1.53-1.532-.817 0-1.532.715-1.532 1.531 0 .817.715 1.531 1.531 1.531.817 0 1.531-.714 1.531-1.53Z"></path></symbol><symbol id="am-symbol-cacm-avatar-blank" viewbox="0 0 40 40"><g>
+		<circle cx="20" cy="20" fill="var(--wp--preset--color--cacm-link-blue)" r="19" stroke="var(--wp--preset--color--cacm-link-blue)" stroke-width="2"></circle>
+		<path clip-rule="evenodd" d="M5 33.23v-.73c0-4.987 9.994-7.5 15-7.5s15 2.513 15 7.5v.73A19.952 19.952 0 0 1 20 40a19.952 19.952 0 0 1-15-6.77ZM20 8.333a7.498 7.498 0 0 0-7.5 7.5c0 4.143 3.356 7.5 7.5 7.5s7.5-3.357 7.5-7.5c0-4.144-3.356-7.5-7.5-7.5Z" fill="var(--wp--preset--color--cacm-gray-200)" fill-rule="evenodd"></path>
+	</g></symbol></svg><div id="page" class="site">
+	<a class="skip-link" href="#content">Skip to content</a>
+
+	<div class="site-header-wrapper" data-component="siteHeader">
+		<header id="masthead" class="site-header site-header--no-js">
+			<div class="site-header-container">
+				
+<button class="site-header-hamburger" aria-label="Main Menu">
+	<span class="site-header-hamburger-closed">
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.2" viewBox="0 0 25 25">
+	<path d="M.2.2h24.6v2.6H.2zm0 11h24.6v2.7H.2zm0 11h24.6v2.6H.2z" style="fill:#1a1a1a"/>
+</svg>
+ 
+	</span>
+	<span class="site-header-hamburger-open">
+		<svg xmlns="http://www.w3.org/2000/svg" version="1.2" viewBox="0 0 25 25">
+	<path d="M1.7.9 24 23.8m-23 0L23.3.9" style="fill:none;stroke:#fff;stroke-width:1.3"/>
+</svg>
+ 
+	</span>
+</button>
+				<a class="site-header-logo" aria-label="Home" href="https://cacm.acm.org">
+					<svg aria-hidden="true" focusable="false" width="548" height="88" fill="#000"><use href="#am-symbol-cacm-logo"></use></svg>					<svg aria-hidden="true" focusable="false" width="548" height="88" fill="#FFF"><use href="#am-symbol-cacm-logo"></use></svg>				</a>
+				
+<div class="site-header-topics-menu">
+	<button class="site-header-topics-menu-toggle">
+		Explore Topics		<svg xmlns="http://www.w3.org/2000/svg" width="14" height="8" fill="none">
+	<path stroke="#1A1A1A" stroke-width="1.5" d="m1.5 1.5 5.5 5 5.5-5"/>
+</svg>
+ 
+	</button>
+	<nav role="navigation" aria-label="Topics Menu" class="site-header-topics-menu-expanded" aria-hidden="true">
+		<ul class="site-header-topics-menu-list">
+																<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/architecture-and-hardware/">
+							Architecture and Hardware						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/artificial-intelligence-machine-learning/">
+							Artificial Intelligence and Machine Learning						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/computer-history/">
+							Computer History						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/computing-applications/">
+							Computing Applications						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/computing-profession/">
+							Computing Profession						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/data-and-information/">
+							Data and Information						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/education/">
+							Education						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/hci/">
+							HCI						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/philosophy-of-computing/">
+							Philosophy of Computing						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/security-and-privacy/">
+							Security and Privacy						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/society/">
+							Society						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/software-engineering-and-programming-languages/">
+							Software Engineering and Programming Languages						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/systems-and-networking/">
+							Systems and Networking						</a>
+					</li>
+																				<li class="site-header-topics-menu-list-item">
+						<a href="https://cacm.acm.org/category/theory/">
+							Theory						</a>
+					</li>
+									</ul>
+	</nav>
+</div>
+				
+<div class="site-header-magazine-menu">
+	<button class="site-header-magazine-menu-toggle">
+		Latest Issue		<svg xmlns="http://www.w3.org/2000/svg" width="14" height="8" fill="none">
+	<path stroke="#1A1A1A" stroke-width="1.5" d="m1.5 1.5 5.5 5 5.5-5"/>
+</svg>
+	</button>
+	<nav role="navigation" aria-label="Magazine Menu" class="site-header-magazine-menu-expanded" aria-hidden="true">
+					<a href="https://cacm.acm.org/issue/august-2026/">
+				<figure class="site-header-magazine-menu-expanded-image">
+					<div class="image-wrapper"><img width="620" height="830" src="https://cacm.acm.org/wp-content/uploads/2026/07/August2026.Cover_.1000x1338.jpg?w=620" class="attachment-cacm-issue-cover size-cacm-issue-cover" alt="August 2026 cover" loading="lazy" decoding="async" srcset="https://cacm.acm.org/wp-content/uploads/2026/07/August2026.Cover_.1000x1338.jpg 1000w, https://cacm.acm.org/wp-content/uploads/2026/07/August2026.Cover_.1000x1338.jpg?resize=224,300 224w, https://cacm.acm.org/wp-content/uploads/2026/07/August2026.Cover_.1000x1338.jpg?resize=768,1028 768w, https://cacm.acm.org/wp-content/uploads/2026/07/August2026.Cover_.1000x1338.jpg?resize=765,1024 765w, https://cacm.acm.org/wp-content/uploads/2026/07/August2026.Cover_.1000x1338.jpg?resize=620,830 620w" sizes="auto, (max-width: 620px) 100vw, 620px" /></div>				</figure>
+			</a>
+				<div class="site-header-magazine-menu-expanded-text">
+							<div class="site-header-magazine-menu-expanded-current">
+					<h2 class="site-header-magazine-menu-expanded-heading">
+						Latest Issue					</h2>
+					<a href="https://cacm.acm.org/issue/august-2026/" class="site-header-magazine-menu-expanded-issue"><b>August 2026</b>, Vol. 69 No. 8</a>
+				</div>
+										<div class="site-header-magazine-menu-expanded-previous">
+					<h2 class="site-header-magazine-menu-expanded-heading">
+						Previous Issue					</h2>
+					<a href="https://cacm.acm.org/issue/july-2026/" class="site-header-magazine-menu-expanded-issue"><b>July 2026</b>, Vol. 69 No. 7</a>
+				</div>
+						<a href="https://cacm.acm.org/issues" class="site-header-magazine-menu-expanded-link">
+				Explore the archive				<svg xmlns="http://www.w3.org/2000/svg" width="12" height="10" fill="none" aria-hidden="true" tabindex="-1">
+	<path fill="#000" d="m7 0-.715.697 3.79 3.803H0v1h10.075l-3.79 3.787L7 10l5-5-5-5Z"/>
+</svg>
+			</a>
+		</div>
+	</nav>
+</div>
+				
+<a href="https://cacm.acm.org/?s=" aria-label="Search" class="site-header-search">
+	<span class="site-header-search-text">
+		Search	</span>
+	<svg aria-hidden="true" focusable="false" width="24" height="24" class="site-header-search-icon"><use href="#am-symbol-icon-search"></use></svg></a>
+				<nav class="site-header-membership-nav">
+	<button class="site-header-membership-nav__button">
+		<span
+			class="site-header-membership-nav__button-text">Open Membership Navigation</span>
+		<span class="site-header-membership-nav__button-icon">
+			<svg aria-hidden="true" focusable="false" width="40" height="40" tabindex="-1"><use href="#am-symbol-cacm-avatar-blank"></use></svg>		</span>
+	</button>
+	<div class="site-header-membership-nav__menu-container" aria-hidden="true">
+		<ul class="site-header-membership-nav__menu">
+			<li class="site-header-membership-nav__menu-item">
+				<a href="https://cacm.acm.org/account/settings">Settings</a>
+			</li>
+						<li class="site-header-membership-nav__menu-item">
+				<a href="https://cacm.acm.org/logout/">Sign Out</a>
+			</li>
+		</ul>
+	</div>
+</nav>
+<a class="site-header-member-login-link" href="https://cacm.acm.org/wp-login.php?saml_sso">Sign In</a>
+<a href="https://cacm.acm.org/join-acm" class="site-header-cta-membership">
+	<div class="site-header-cta-membership-container">
+		<div class="site-header-cta-membership-text">
+			Join ACM			<svg xmlns="http://www.w3.org/2000/svg" width="12" height="10" fill="none" aria-hidden="true" tabindex="-1">
+	<path fill="#000" d="m7 0-.715.697 3.79 3.803H0v1h10.075l-3.79 3.787L7 10l5-5-5-5Z"/>
+</svg>
+		</div>
+		<div class="site-header-cta-membership-logo">
+			<svg aria-hidden="true" focusable="false" width="48" height="48"><use href="#am-symbol-cacm-logo-small"></use></svg>		</div>
+	</div>
+</a>
+			</div>
+			
+<nav role="navigation" aria-label="Main Menu" class="site-header-hamburger-menu" aria-hidden="true">
+
+	<!-- Search bar -->
+	<form role="search" action="https://cacm.acm.org" method="get" class="site-header-hamburger-menu-search">
+		<label for="site-navigation-expanded-search">
+			<span class="site-header-hamburger-menu-search-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none">
+		<path fill="#4C4C4C" d="m21 19.902-5.866-5.867a8.558 8.558 0 1 0-1.099 1.099L19.902 21 21 19.902ZM1.581 8.572a6.99 6.99 0 1 1 6.99 6.99 6.999 6.999 0 0 1-6.99-6.99Z"/>
+	</svg>
+			</span>
+			<input type="text" name="s" id="site-navigation-expanded-search" class="site-header-hamburger-menu-search-input" placeholder="Search" value="" />
+		</label>
+	</form>
+
+	<!-- Topics menu -->
+	<div class="site-header-hamburger-menu-topics site-header-hamburger-menu-topics--expanded">
+					<h2 class="site-header-hamburger-menu-heading">
+				Topics				<span class="site-header-hamburger-menu-accordion-icon">
+					<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#am-symbol-icon-chevron-down"></use></svg>				</span>
+			</h2>
+			<ul class="site-header-hamburger-menu-topics-menu">
+																<li>
+						<a href="https://cacm.acm.org/category/architecture-and-hardware/">
+							Architecture and Hardware						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/artificial-intelligence-machine-learning/">
+							Artificial Intelligence and Machine Learning						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/computer-history/">
+							Computer History						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/computing-applications/">
+							Computing Applications						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/computing-profession/">
+							Computing Profession						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/data-and-information/">
+							Data and Information						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/education/">
+							Education						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/hci/">
+							HCI						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/philosophy-of-computing/">
+							Philosophy of Computing						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/security-and-privacy/">
+							Security and Privacy						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/society/">
+							Society						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/software-engineering-and-programming-languages/">
+							Software Engineering and Programming Languages						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/systems-and-networking/">
+							Systems and Networking						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/category/theory/">
+							Theory						</a>
+					</li>
+										</ul>
+			</div>
+
+	<!-- Sections menu -->
+	<div class="site-header-hamburger-menu-sections">
+					<h2 class="site-header-hamburger-menu-heading">
+				Sections				<span class="site-header-hamburger-menu-accordion-icon">
+					<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#am-symbol-icon-chevron-down"></use></svg>				</span>
+			</h2>
+			<ul class="site-header-hamburger-menu-sections-menu">
+																<li>
+						<a href="https://cacm.acm.org/section/research/">
+							Research and Advances						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/section/opinion/">
+							Opinion						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/section/practice/">
+							Practice						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/section/news/">
+							News						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/section/research-highlights/">
+							Research Highlights						</a>
+					</li>
+																				<li>
+						<a href="https://cacm.acm.org/section/careers/">
+							Careers						</a>
+					</li>
+										</ul>
+			</div>
+
+	<!-- Magazine menu -->
+	<div class="site-header-hamburger-menu-magazine">
+		<h2 class="site-header-hamburger-menu-heading">
+			Magazine			<span class="site-header-hamburger-menu-accordion-icon">
+				<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#am-symbol-icon-chevron-down"></use></svg>			</span>
+		</h2>
+		<ul id="menu-magazine-header" class="site-header-hamburger-menu-magazine-menu"><li id="menu-item-217988" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-217988"><a href="/issue/latest/" id="menu-link-1">Latest Issue</a></li>
+<li id="menu-item-217989" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-217989"><a href="/issues/" id="menu-link-2">Magazine Archive</a></li>
+<li id="menu-item-224644" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224644"><a href="https://cacm.acm.org/editorial-staff-board/" id="menu-link-3">Editorial Staff and Board</a></li>
+<li id="menu-item-751386" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-751386"><a href="https://cacm.acm.org/author-guidelines#CACMsubmission" id="menu-link-4">Submit an Article</a></li>
+<li id="menu-item-224585" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224585"><a href="https://cacm.acm.org/feeds-2/" id="menu-link-5">Alerts &#038; Feeds</a></li>
+<li id="menu-item-224645" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224645"><a href="https://cacm.acm.org/author-guidelines/" id="menu-link-6">Author Guidelines</a></li>
+</ul>	</div>
+
+	<div class="site-header-hamburger-menu-membership">
+		<span class="site-header-hamburger-menu-membership-logo">
+			<svg aria-hidden="true" focusable="false" width="49" height="48"><use href="#am-symbol-cacm-logo-small"></use></svg>		</span>
+		<h2 class="site-header-hamburger-menu-heading site-header-hamburger-menu-membership-heading">
+			CACM Web Account		</h2>
+		<p class="site-header-hamburger-menu-membership-text">Membership in ACM includes a subscription to Communications of the ACM (CACM), the computing industry&#039;s most trusted source for staying connected to the world of advanced computing.</p>
+		<div class="site-header-hamburger-menu-membership-buttons">
+			<a href="https://cacm.acm.org/wp-login.php?saml_sso" class="site-header-hamburger-menu-membership-buttons-log-in">
+				Sign In			</a>
+			<a href="https://accounts.acm.org/" class="site-header-hamburger-menu-membership-buttons-sign-up">
+				Sign Up			</a>
+		</div>
+	</div>
+
+	<!-- Communications menu -->
+	<div class="site-header-hamburger-menu-communications">
+		<h2 class="site-header-hamburger-menu-heading">
+			Communications of the ACM			<span class="site-header-hamburger-menu-accordion-icon">
+				<svg aria-hidden="true" focusable="false" width="16" height="16"><use href="#am-symbol-icon-chevron-down"></use></svg>			</span>
+		</h2>
+		<ul id="menu-communications-header" class="site-header-hamburger-menu-communications-menu"><li id="menu-item-224641" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224641"><a href="https://cacm.acm.org/about-us/" id="menu-link-7">About Us</a></li>
+<li id="menu-item-224663" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224663"><a href="https://cacm.acm.org/faq/" id="menu-link-8">Frequently Asked Questions</a></li>
+<li id="menu-item-224640" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224640"><a href="https://cacm.acm.org/contact-us/" id="menu-link-9">Contact Us</a></li>
+</ul>	</div>
+
+	<div class="site-header-hamburger-menu-social">
+		<h2 class="site-header-hamburger-menu-heading">
+			Follow Us		</h2>
+		<ul class="site-header-hamburger-menu-social-menu">
+			<li>
+				<a href="https://twitter.com/cacmmag">
+					<span class="screen-reader-only">CACM on Twitter</span>
+					<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="none">
+	<path fill="#1DA1F2" d="M27.613 13.657a7.057 7.057 0 0 1-2.03.557 3.54 3.54 0 0 0 1.555-1.955 7.08 7.08 0 0 1-2.245.857A3.53 3.53 0 0 0 22.313 12c-2.282 0-3.958 2.13-3.442 4.34a10.033 10.033 0 0 1-7.285-3.694 3.54 3.54 0 0 0 1.093 4.72 3.52 3.52 0 0 1-1.6-.442c-.038 1.637 1.135 3.169 2.835 3.51a3.542 3.542 0 0 1-1.596.06 3.538 3.538 0 0 0 3.301 2.454 7.106 7.106 0 0 1-5.232 1.465A10.006 10.006 0 0 0 15.804 26c6.562 0 10.27-5.542 10.046-10.513a7.195 7.195 0 0 0 1.763-1.83Z"/>
+	<path fill="#000" d="M27.613 13.657a7.057 7.057 0 0 1-2.03.557 3.54 3.54 0 0 0 1.555-1.955 7.08 7.08 0 0 1-2.245.857A3.53 3.53 0 0 0 22.313 12c-2.282 0-3.958 2.13-3.442 4.34a10.033 10.033 0 0 1-7.285-3.694 3.54 3.54 0 0 0 1.093 4.72 3.52 3.52 0 0 1-1.6-.442c-.038 1.637 1.135 3.169 2.835 3.51a3.542 3.542 0 0 1-1.596.06 3.538 3.538 0 0 0 3.301 2.454 7.106 7.106 0 0 1-5.232 1.465A10.006 10.006 0 0 0 15.804 26c6.562 0 10.27-5.542 10.046-10.513a7.195 7.195 0 0 0 1.763-1.83Z"/>
+	<rect width="37" height="37" x=".5" y=".5" stroke="#D8D8D8" rx="18.5"/>
+</svg>
+				</a>
+			</li>
+			<li>
+				<a href="https://www.reddit.com/user/TheOfficialACM">
+					<span class="screen-reader-only">CACM on Reddit</span>
+					<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="none">
+	<path fill="#FF4500" d="M27.764 21.071v.613c0 3.368-3.879 6.022-8.676 6.022-4.797 0-8.676-2.654-8.676-6.022v-.613c-1.122-.51-1.53-1.735-1.122-2.857.306-.817 1.123-1.327 1.939-1.225.612 0 1.123.204 1.531.612 1.735-1.122 3.776-1.837 5.818-1.837l1.122-5.103c0-.102.102-.204.102-.204.102-.102.205-.102.307-.102l3.572.816c.408-.714 1.327-1.123 2.041-.714.715.408 1.123 1.326.715 2.04-.409.715-1.327 1.124-2.042.715-.51-.204-.816-.714-.816-1.326l-3.164-.715-1.02 4.593c2.245.102 4.286.817 5.715 1.837.816-.816 2.245-.816 3.062 0 .408.408.612.919.612 1.531.306.919-.306 1.633-1.02 1.94Zm-11.942 1.123c.816 0 1.53-.714 1.53-1.53 0-.817-.714-1.532-1.53-1.532-.817 0-1.531.715-1.531 1.531 0 .817.612 1.531 1.53 1.531Zm7.042 1.94c-.204-.205-.408-.205-.51 0-.612.714-2.041.918-3.062.918-1.02 0-2.45-.204-3.062-.919-.204-.204-.408-.204-.51 0-.204.204-.204.409 0 .51 1.02 1.021 3.062 1.123 3.674 1.123.613 0 2.552-.102 3.675-1.122-.102-.102-.102-.306-.205-.51Zm1.225-3.47c0-.817-.714-1.532-1.53-1.532-.817 0-1.532.715-1.532 1.531 0 .817.715 1.531 1.531 1.531.817 0 1.531-.714 1.531-1.53Z"/>
+	<path fill="#000" d="M27.764 21.071v.613c0 3.368-3.879 6.022-8.676 6.022-4.797 0-8.676-2.654-8.676-6.022v-.613c-1.122-.51-1.53-1.735-1.122-2.857.306-.817 1.123-1.327 1.939-1.225.612 0 1.123.204 1.531.612 1.735-1.122 3.776-1.837 5.818-1.837l1.122-5.103c0-.102.102-.204.102-.204.102-.102.205-.102.307-.102l3.572.816c.408-.714 1.327-1.123 2.041-.714.715.408 1.123 1.326.715 2.04-.409.715-1.327 1.124-2.042.715-.51-.204-.816-.714-.816-1.326l-3.164-.715-1.02 4.593c2.245.102 4.286.817 5.715 1.837.816-.816 2.245-.816 3.062 0 .408.408.612.919.612 1.531.306.919-.306 1.633-1.02 1.94Zm-11.942 1.123c.816 0 1.53-.714 1.53-1.53 0-.817-.714-1.532-1.53-1.532-.817 0-1.531.715-1.531 1.531 0 .817.612 1.531 1.53 1.531Zm7.042 1.94c-.204-.205-.408-.205-.51 0-.612.714-2.041.918-3.062.918-1.02 0-2.45-.204-3.062-.919-.204-.204-.408-.204-.51 0-.204.204-.204.409 0 .51 1.02 1.021 3.062 1.123 3.674 1.123.613 0 2.552-.102 3.675-1.122-.102-.102-.102-.306-.205-.51Zm1.225-3.47c0-.817-.714-1.532-1.53-1.532-.817 0-1.532.715-1.532 1.531 0 .817.715 1.531 1.531 1.531.817 0 1.531-.714 1.531-1.53Z"/>
+	<rect width="37" height="37" x=".5" y=".5" stroke="#D8D8D8" rx="18.5"/>
+</svg>
+				</a>
+			</li>
+			<li>
+				<a href="https://www.linkedin.com/groups/36836/">
+					<span class="screen-reader-only">CACM on LinkedIn</span>
+					<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="none">
+	<path fill="#000" d="M14.117 12.74c0 .96-.773 1.738-1.726 1.738a1.732 1.732 0 0 1-1.725-1.739c0-.96.772-1.739 1.725-1.739.953 0 1.726.78 1.726 1.74Zm.013 3.13h-3.478V27h3.479V15.87Zm5.553 0h-3.456V27h3.457v-5.843c0-3.248 4.194-3.514 4.194 0V27h3.47v-7.048c0-5.481-6.207-5.282-7.665-2.583v-1.5Z"/>
+	<rect width="37" height="37" x=".5" y=".5" stroke="#D8D8D8" rx="18.5"/>
+</svg>
+				</a>
+			</li>
+		</ul>
+	</div>
+
+</nav>
+		</header>
+	</div>
+
+	<div id="content" class="site-content container">
+		<div id="primary" class="content-area">
+			<main id="main" class="site-main">
+
+				
+<article id="post-125722" class="post-125722 digital-library type-digital-library status-publish has-post-thumbnail hentry category-architecture-and-hardware category-artificial-intelligence-machine-learning category-computing-applications category-computing-profession category-data-and-information category-security-and-privacy category-software-engineering-and-programming-languages category-systems-and-networking category-theory issue-may-2022 section-research">
+
+			
+<header class="article-header article-header--dark">
+	<div class="article-header__inner container">
+		<div class="article-header__section"><a href="https://cacm.acm.org/section/research/">Research and Advances</a></div>
+		<div class="article-header__topic-and-issue-section">
+			<span class="article-header__topic">
+			<a href="https://cacm.acm.org/category/architecture-and-hardware/">Architecture and Hardware</a>			</span>
+			<span class="article-header__issue-section">
+				Contributed articles			</span>
+		</div>
+		<h1 class="article-header__title">The Go Programming Language and Environment</h1>
+					<div class="article-header__subtitle">Released as open source in November 2009, Go has become the foundation for critical infrastructure at every major cloud provider. Its creators look back on how Go got here and why it has stuck around.</div>
+		
+		<div class="article-header__meta">
+			<div class="article-header__byline">
+				By <a href="https://cacm.acm.org/author/russ-cox/" title="Posts by Russ Cox" class="author url fn" rel="author">Russ Cox</a>, <a href="https://cacm.acm.org/author/robert-griesemer/" title="Posts by Robert Griesemer" class="author url fn" rel="author">Robert Griesemer</a>, <a href="https://cacm.acm.org/author/rob-pike/" title="Posts by Rob Pike" class="author url fn" rel="author">Rob Pike</a>, <a href="https://cacm.acm.org/author/ian-lance-taylor/" title="Posts by Ian Lance Taylor" class="author url fn" rel="author">Ian Lance Taylor</a>, and <a href="https://cacm.acm.org/author/ken-thompson/" title="Posts by Ken Thompson" class="author url fn" rel="author">Ken Thompson</a>			</div>
+			<div class="article-header__posted-on">
+				<span class="posted-on">Posted <time datetime="2022-05-01T00:00:00-04:00">May 1 2022</time></span>			</div>
+		</div>
+
+		
+		<div class="article-header__share">
+			
+<ul class="share">
+	
+<li class="share-link" data-component="share">
+	<a href="#" class="share-toggle">
+		<svg aria-hidden="true" focusable="false" width="19" height="18" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-share"></use></svg>		<span class="share-link-text">
+			Share		</span>
+	</a>
+	<ul class="share-menu" aria-hidden="true">
+		<li>
+			<a href="https://twitter.com/intent/tweet?url=https://cacm.acm.org/research/the-go-programming-language-and-environment/&#038;text=The%20Go%20Programming%20Language%20and%20Environment" target="_blank">
+				Twitter			</a>
+		</li>
+		<li>
+			<a href="http://www.reddit.com/submit?url=https://cacm.acm.org/research/the-go-programming-language-and-environment/&#038;title=The%20Go%20Programming%20Language%20and%20Environment" target="_blank">
+				Reddit			</a>
+		</li>
+		<li>
+			<a href="https://news.ycombinator.com/submitlink?u=https://cacm.acm.org/research/the-go-programming-language-and-environment/&#038;t=The%20Go%20Programming%20Language%20and%20Environment" target="_blank">
+				Hacker News			</a>
+		</li>
+		<li>
+			<a href="https://www.linkedin.com/sharing/share-offsite/?url=https://cacm.acm.org/research/the-go-programming-language-and-environment/" target="_blank">
+				LinkedIn			</a>
+		</li>
+	</ul>
+</li>
+
+<li class="share-link share-link-pdf">
+	<a href="https://dl.acm.org/doi/pdf/10.1145/3488716" target="_blank">
+		<svg aria-hidden="true" focusable="false" width="19" height="20" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-pdf-download"></use></svg>		<span class="share-link-text">
+			Download PDF		</span>
+	</a>
+</li>
+
+	<li class="share-link share-link-discussion" data-component="share">
+		<a class="share-link-comments" href="#comments">
+			<svg aria-hidden="true" focusable="false" width="19" height="20" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-comment"></use></svg>			<span class="share-link-text">Join the Discussion</span>
+		</a>
+	</li>
+
+<li class="share-link share-link-dl">
+	<a href="https://dl.acm.org/doi/10.1145/3488716">
+		<svg aria-hidden="true" focusable="false" width="21" height="21" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-digital-library"></use></svg>		<span class="share-link-text">
+			View in the ACM Digital Library		</span>
+		<svg aria-hidden="true" focusable="false" width="14" height="9" fill="var(--cacm--symbol--fill)" class="icon-dl"><use href="#am-symbol-icon-arrow-right"></use></svg>	</a>
+</li>
+</ul>
+		</div>
+	</div>
+</header>
+
+<nav class="article-table-of-contents" aria-label="Article table of contents" data-component="articleToc">
+			<ol class="article-table-of-contents__list" id="article-toc-panel-125722">
+			<li><a href="#body-1">Introduction</a></li> 
+       <li><a href="#body-2">Key Insights</a></li> 
+       <li><a href="#body-3">Origins</a></li> 
+       <li><a href="#body-4">Packages</a></li> 
+       <li><a href="#body-5">Types</a></li> 
+       <li><a href="#body-6">Concurrency</a></li> 
+       <li><a href="#body-7">Security and Safety</a></li> 
+       <li><a href="#body-8">Completeness</a></li> 
+       <li><a href="#body-9">Consistency</a></li> 
+       <li><a href="#body-10">Tool-Aided Development</a></li> 
+       <li><a href="#body-11">Libraries</a></li> 
+       <li><a href="#body-12">Conclusion</a></li> 
+       <li><a href="#body-13">Acknowledgments</a></li> 
+       <li><a href="#references">References</a></li> 
+       <li><a href="#authorinfo">Authors</a></li>		</ol>
+		<button
+			class="article-table-of-contents__mobile-pill"
+			type="button"
+			aria-controls="article-toc-panel-125722"
+			aria-expanded="false"
+		>
+			<span class="article-table-of-contents__pill-icon article-table-of-contents__pill-icon--menu" aria-hidden="true">
+				<svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M21.8833 15.75L5.47083 15.75V14.3231L21.8833 14.3231V15.75ZM21.8833 11.025L5.47083 11.025V9.45L21.8833 9.45V11.025ZM21.8833 6.3L5.47083 6.3V4.725L21.8833 4.725V6.3ZM21.8833 1.575L5.47083 1.575V-9.53674e-07L21.8833 -9.53674e-07V1.575ZM1.82362 15.75H1.14441e-05V14.175H1.82362V15.75ZM1.82362 11.025L1.14441e-05 11.025V9.45L1.82362 9.45V11.025ZM1.82362 6.3H1.14441e-05V4.725H1.82362V6.3ZM1.82362 1.575H1.14441e-05V-9.53674e-07H1.82362V1.575Z" fill="#015FAC"/>
+				</svg>
+			</span>
+			<span class="article-table-of-contents__pill-icon article-table-of-contents__pill-icon--close" aria-hidden="true">
+				<svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M1.79874 18.0833L0 16.275L7.19496 9.04167L0 1.80833L1.79874 0L8.9937 7.23333L16.1887 0L17.9874 1.80833L10.7924 9.04167L17.9874 16.275L16.1887 18.0833L8.9937 10.85L1.79874 18.0833Z" fill="#015FAC"/>
+				</svg>
+			</span>
+			<span class="article-table-of-contents__pill-text">Article Contents</span>
+		</button>
+	</nav>
+		<div class="article-contents">
+			
+<div class="article-content entry-content">
+			<figure class="article-content__featured-image article-content__featured-image--inline">
+			<img width="250" height="250" src="https://cacm.acm.org/wp-content/uploads/2022/05/041822_CACMpg71_The-Go.jpg?w=250" class="attachment-post-thumbnail size-post-thumbnail wp-post-image" alt="Go Gopher in the clouds" decoding="async" fetchpriority="high" srcset="https://cacm.acm.org/wp-content/uploads/2022/05/041822_CACMpg71_The-Go.jpg 250w, https://cacm.acm.org/wp-content/uploads/2022/05/041822_CACMpg71_The-Go.jpg?resize=150,150 150w" sizes="(max-width: 250px) 100vw, 250px" />					</figure>
+		<!-- BEGIN BODY-1 -->
+<p><a name="body-1"></a></p>
+
+<p>Go is a programming language created at Google in late 2007 and released as open source in November 2009. Since then, it has operated as a public project, with contributions from thousands of individuals and dozens of companies. Go has become a popular language for building cloud infrastructure: Docker, a Linux container manager, and Kubernetes, a container deployment system, are core cloud technologies written in Go. Today, Go is the foundation for critical infrastructure at every major cloud provider and is the implementation language for most projects hosted at the Cloud Native Computing Foundation.</p>
+<!-- END BODY-1 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-2 -->
+
+<p><a name="body-2"></a></p>
+
+<div class="article-key-insights"><h3>Key Insights</h3><ul><li>The Go language enjoys widespread adoption despite having few technical advances. Instead, Go succeeded by focusing on the overall environment for engineering software projects. </li><li>Go&#8217;s approach is to treat language features as no more important than environmental ones, such as careful handling of dependencies, scalable development and production, programs that are secure by default, tool-aided testing and development, amenability to automated changes, and long-term guaranteed compatibility.</li><li>Go 1.18, released in March 2022, added its first major new language feature in a decade: parametric polymorphism tailored to fit well with the rest of Go.</li></ul></div>
+
+<p>Early users were attracted to Go for a variety of reasons. A garbage-collected, statically compiled language for building systems was unusual. Go&#8217;s native support for concurrency and parallelism helped take advantage of the multicore machines that were becoming mainstream at the time. Self-contained binaries and easy cross-compilation simplified deployment. And Google&#8217;s name was undoubtedly a draw. <!-- END_PAGE_1 --></p>
+
+<p>But why did users stay? Why has Go grown in popularity when so many other language projects have not? We believe that the language itself forms only a small part of the answer. The full story must involve the entire Go environment: the libraries, tools, conventions, and overall approach to software engineering, which all support programming in the language. The most important decisions made in the language&#8217;s design, then, were the ones that made Go better for large-scale software engineering and helped us attract like-minded developers.</p>
+
+<p>In this article, we examine the design decisions we believe are most responsible for Go&#8217;s success, exploring how they apply not just to the language but also to the environment more broadly. It is difficult to isolate the contributions of any specific decision, so this article should be read not as scientific analysis, but as a presentation of our best understanding, based on experience and user feedback over the past decade of Go.</p>
+<!-- END BODY-2 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-3 -->
+
+<p><a name="body-3"></a></p>
+
+<h3>Origins</h3>
+
+<p>Go arose through experience building large-scale distributed systems at Google, working in a large codebase shared by thousands of software engineers. We hoped that a language and tools designed for such an environment could address challenges faced by the company and industry at large. Challenges arose due to the scale of both the development efforts and the production systems being deployed.</p>
+
+<p><strong>Development scale.</strong> On the development side, Google in 2007 had about 4,000 active users working in a single, shared, multi-language (C++, Java, Python) codebase.<sup><a href="#R3">3</a></sup> The single codebase made it easy to fix, for example, a problem in the memory allocator that was slowing down the main web server. But when working on a library, it was too easy to unwittingly break a previously unknown client because of the difficulty of finding all the dependencies of a package.</p>
+
+<p>Also, in existing languages we used, importing one library could cause the compiler to recursively load all the libraries that one imported. In one C++ compilation in 2007, we observed the compiler (after <code>#include</code> processing) reading more than 8 GB of data when handed a set of files totaling 4.2 MB, an expansion factor of almost 2,000 on an already large program. If the number of header files read to compile a given source file grows linearly with the source tree, the compilation cost for the entire tree grows quadratically.</p>
+
+<p>To compensate for the slowdown, work began on a new, massively parallel and cacheable build system, which eventually became the open source Bazel build system.<sup><a href="#R23">23</a></sup> But parallelism and caching can do only so much to repair an inefficient system. We believed the language itself needed to do more to help.</p>
+
+<p><strong>Production scale.</strong> On the production side, Google was running very large systems. For example, in March 2005, one 1,500-CPU cluster of the Sawzall log analysis system processed 2.8 PB of data.<sup><a href="#R26">26</a></sup> In August 2006, Google&#8217;s 388 Big-table serving clusters comprised 24,500 individual tablet servers, with one group of 8,069 servers handling an aggregate 1.2 million requests per second.<sup><a href="#R4">4</a></sup></p>
+
+<p>Yet Google, along with the rest of the industry, was struggling to write efficient programs to take full advantage of multicore systems. Many of our systems resorted to running multiple copies of the same binary on a single machine, because existing multithreading support was both cumber-some and low performance. Large, fixed-size thread stacks, heavyweight stack switches, and awkward syntax for creating new threads and managing interactions between them all made it more difficult to use multicore systems. But it was clear that the number of cores in a server was only going to grow.</p>
+
+<p>Here too, we believed that the language itself could help, by providing lightweight, easy-to-use primitives for concurrency. We also saw an opportunity in those additional cores: a garbage collector could run in parallel with the main program on a dedicated core, reducing its latency costs.</p>
+
+<p>Go is our answer to the question of what a language designed to meet these challenges might look like. Part of Go&#8217;s popularity is undoubtedly that the entire tech industry now faces these challenges daily. Cloud providers make it possible for even the smallest companies to target very large production deployments. And while most companies do not have thousands of active employees writing code, almost all companies now depend on large amounts of open source infrastructure worked on by thousands of programmers.</p>
+
+<p>The remainder of this article examines how specific design decisions address these goals of scaling both development and production. We start with the core language itself and work outward to the surrounding environment. We do not attempt to give a complete introduction to the language. For that, see the Go language specification<sup><a href="#R18">18</a></sup> or books such as <em>The Go Programming Language.</em><sup><a href="#R11">11</a></sup></p>
+<!-- END BODY-3 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-4 -->
+
+<p><a name="body-4"></a></p>
+
+<h3>Packages</h3>
+
+<p>A Go program is made up of one or more importable packages, each containing one or more files. The web server in <a href="https://dl.acm.org/cms/attachment/cf29de71-43b7-44ad-8f25-f135dec25b9c/f1.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1021,height=544'); return false;">Figure 1</a> illustrates many important details about the design of Go&#8217;s package system:</p>
+
+<p><a href="https://dl.acm.org/cms/attachment/cf29de71-43b7-44ad-8f25-f135dec25b9c/f1.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1021,height=544'); return false;"><img decoding="async" alt="f1.jpg" height="221" src="https://dl.acm.org/cms/attachment/cf29de71-43b7-44ad-8f25-f135dec25b9c/f1.jpg" width="415"></a><br>
+<strong>Figure 1. A Go web server.</strong></p>
+
+<p>The program starts a local web server (line 9) that handles each request by calling the <code>hello</code> function, which responds with the message &#8220;hello, world&#8221; (line 14).</p>
+
+<p>A package imports another using an explicit <code>import</code> statement (lines 3-6), as in many languages but in contrast to C++&#8217;s textual <code>#include</code> mechanism. Unlike most languages, though, Go arranges that each import reads only a single file. For example, the <code>fmt</code> package&#8217;s public API references types from the <code>io</code> package: the first argument to <code>fmt.Fprintf</code> is an interface value of type <code>io.Writer</code>. In most languages, a compiler processing the import of <code>fmt</code> would also load all of <code>io</code> to make sense of <code>fmt</code>&#8216;s definitions, which might in turn require loading additional packages to make sense of all of <code>io</code>&#8216;s definitions. A single import statement could end up processing tens or hundreds of packages.</p>
+
+<p>Go avoids this work by arranging, similar to Modula-2,<sup><a href="#R13">13</a></sup> for the compiled <code>fmt</code> package&#8217;s metadata to contain everything necessary to know about its own dependencies, such as the definition of <code>io.Writer</code>. Thus, the compilation of <code>import "fmt"</code> reads only a single file that completely describes <code>fmt</code> and its dependencies. Moreover, this flattening is done once, when <code>fmt</code> is compiled, avoiding many loads each time it is imported. This approach leads to less work for the compiler and faster builds, helping large-scale development. Also, package import cycles are disallowed: since <code>fmt</code> imports <code>io, io</code> cannot import <code>fmt</code>, nor anything else that imports <code>fmt</code>, even indirectly. This too leads to less work for the compiler, guaranteeing that a particular build can be split up at the level of individual, separately compiled packages. This also enables incremental program analyses, which we run to catch mistakes even before running tests, as described below.</p>
+
+<p>Importing <code>fmt</code> does not make the name <code>io.Writer</code> available to the client. If the main package wants to use the type <code>io.Writer</code>, it must <code>import "io"</code> for itself. Thus, once all references to <code>fmt</code>-qualified names have been removed from the source file—for example, if the <code>fmt.Fprintf</code> call is deleted—the <code>import "fmt"</code> statement is safe to remove from the source without further analysis. This property makes it possible to automate management of imports in the source code. In fact, Go disallows unused imports to avoid bloat created by linking unused code into programs.</p>
+
+<p>Import paths are quoted string literals, which enables flexibility in their interpretation. A slash-separated path identifies the imported package in the <code>import</code>, but then source code refers to the package using the short identifier declared in the package statement. For example, <code>import "net/http"</code> declares the top-level name <code>http</code> that provides access to its contents. Beyond the standard library, packages are identified by URL-like paths beginning with domain names, as in <code>import "github.com/google/ uuid"</code>. We will have more to say about such packages later.</p>
+
+<p>As a final detail, note the uppercase letter in the names <code>fmt.Fprintf</code> and <code>io.Writer</code>. Go&#8217;s analog of C++ and Java&#8217;s public, private, and protected concepts and keywords is a naming convention. Names with a leading uppercase letter, such as <code>Printf</code> and <code>Writer</code>, are &#8220;exported&#8221; (public). Others are not. The case-based, compiler-enforced export rule applies to package-level identifiers for constants, functions, and types; method names; and struct field names. We settled on this rule to avoid the syntactic weight of having to write a keyword like <code>export</code> next to every identifier involved in the public API. Over time, we have come to value the ability to see whether the identifier is available outside the package or is purely internal at each of its uses.</p>
+<!-- END BODY-4 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-5 -->
+
+<p><a name="body-5"></a></p>
+
+<h3>Types</h3>
+
+<p>Go provides the usual set of basic types: Booleans, sized integers such as <code>uint8</code> and <code>int32</code>, unsized <code>int</code> and <code>uint</code> (32-or 64-bit, depending on machine size), and sized floating-point and complex numbers. It provides pointers, fixed-size arrays, and structs in a manner similar to C. It also provides a built-in string type, a hash table called a map, and dynamically sized arrays called slices. Most Go programs rely on these and no other special container types.</p>
+
+<p>Go does not define classes but allows methods to be bound to any type, including structs, arrays, slices, maps, and even basic types, such as integers. It does not have a type hierarchy; we felt that inheritance tended to make programs harder to adapt as they grow. Instead, Go encourages composition of types.<sup><a href="#R9">9</a></sup></p>
+
+<hr>
+<blockquote>
+<p><em>Today, Go is the foundation for critical infrastructure at every major cloud provider.</em></p>
+</blockquote>
+
+<hr>
+<p>Go provides object-oriented polymorphism through its interface types. Like a Java interface or a C++ abstract virtual class, a Go interface contains a list of method names and signatures. For example, the <code>io.Writer</code> interface mentioned earlier is defined in the <code>io</code> package as shown in <a href="https://dl.acm.org/cms/attachment/3e2e08e4-eb53-4659-b1fb-a8d0c5af6024/f2.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1021,height=194'); return false;">Figure 2</a>.</p>
+
+<p><a href="https://dl.acm.org/cms/attachment/3e2e08e4-eb53-4659-b1fb-a8d0c5af6024/f2.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1021,height=194'); return false;"><img decoding="async" alt="f2.jpg" height="79" src="https://dl.acm.org/cms/attachment/3e2e08e4-eb53-4659-b1fb-a8d0c5af6024/f2.jpg" width="415"></a><br>
+<strong>Figure 2. The io package&#8217;s writer interface.</strong></p>
+
+<p><code>Write</code> accepts a slice of bytes and returns an integer and possible error. Unlike in Java and C++, any Go type that has methods with the same names and signatures as an interface is considered to implement that interface, without explicitly declaring that it does so. For example, the type <code>os.File</code> has a <code>Write</code> method with the same signature, and therefore it implements <code>io.Writer</code>, without an explicit signal like Java&#8217;s &#8220;implements&#8221; annotations.</p>
+
+<p>Avoiding the explicit association between interfaces and implementations allows Go programmers to define small, nimble, often ad hoc interfaces, rather than using them as foundation blocks in a complex type hierarchy. It encourages capturing relationships and operations as they arise during development, instead of needing to plan and define them all ahead of time. This especially helps with large programs, in which the eventual structure is much more difficult to see clearly when first beginning development. Removing the bookkeeping of declaring implementations encourages the use of precise, one- or two-method interfaces, such as <code>Writer, Reader, Stringer</code> (analogous to Java&#8217;s <code>toString</code> method), and so on, which pervade the standard library.</p>
+
+<p>Developers first learning about Go often worry about a type accidentally implementing an interface. Although it is easy to build hypotheticals, in practice it is unlikely that the same name and signature would be chosen for two incompatible operations, and we have never seen it happen in real Go programs.</p>
+<!-- END BODY-5 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-6 -->
+
+<p><a name="body-6"></a></p>
+
+<h3>Concurrency</h3>
+
+<p>When we started designing Go, multi-core computers were becoming widely available, but threads remained a heavyweight concept in all popular languages and operating systems. The difficulty of creating, using, and managing threads made them unpopular,<sup><a href="#R24">24</a></sup> limiting access to the full power of multicore CPUs. Resolving this tension was one of the prime motivations for creating Go.</p>
+
+<p>Go includes in the language itself the concept of multiple concurrent threads of control, called <em>goroutines</em>, running in a single shared address space and efficiently multiplexed onto operating system threads. A call to a blocking operation, such as reading from a file or network, blocks only the goroutine doing the operation; other goroutines on the thread may be moved to another thread so they can continue to execute while the caller is blocked. Goroutines start with only a few kilobytes of stack, which is resized as needed, without programmer involvement. Developers use goroutines as a plentiful, inexpensive primitive for structuring programs. It is routine for a server program to have thousands or even millions of goroutines, as they are much cheaper than threads.</p>
+
+<p>For example, <code>net.Listener</code> is an interface with an <code>Accept</code> method that can listen for and return new incoming network connections. <a href="https://dl.acm.org/cms/attachment/061261ed-667f-4fab-8b3d-90bd7f0edbae/f3.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1022,height=650'); return false;">Figure 3</a> shows a function <code>listen</code> that accepts connections and starts a new goroutine to run the serve function for each.</p>
+
+<p><a href="https://dl.acm.org/cms/attachment/061261ed-667f-4fab-8b3d-90bd7f0edbae/f3.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1022,height=650'); return false;"><img loading="lazy" decoding="async" alt="f3.jpg" height="264" src="https://dl.acm.org/cms/attachment/061261ed-667f-4fab-8b3d-90bd7f0edbae/f3.jpg" width="415"></a><br>
+<strong>Figure 3. A Go network server.</strong></p>
+
+<p>The infinite <code>for</code> loop in the listen function body (lines 22–28) calls <code>listener.Accept</code>, which returns two values: the connection and a possible error. Assuming there is no error, the <code>go</code> statement (line 27) starts its argument—the function call <code>serve(conn)</code>—in a new goroutine, analogous to the &amp; suffix to a Unix shell command but inside the same operating system process. The function to be called as well as its arguments are evaluated in the original goroutine; those values are copied to create the initial stack frame of the new goroutine. Thus, the program runs an independent instance of the <code>serve</code> function for each incoming network connection. An invocation of <code>serve</code> handles the requests on a given connection one at a time (the call to <code>handle(req)</code> on line 37 is not prefixed by <code>go</code>); each call can block without affecting the handling of other network connections.</p>
+
+<p>Under the hood, the Go implementation uses an efficient multiplexing operation, such as Linux&#8217;s epoll, to handle concurrent I/O operations, but the user doesn&#8217;t see that. The Go runtime library instead presents the abstraction of blocking I/O, in which each goroutine executes sequentially—no callbacks needed—which is easy to reason about.</p>
+
+<p>Having created multiple goroutines, a program must often coordinate between them. Go provides <em>channels</em>, which allow communication and synchronization between goroutines: a channel is a unidirectional, limited-size pipe carrying typed messages between goroutines. Go also provides a multi-way <code>select</code> primitive that can control execution according to which communications can proceed. These ideas are adapted from Hoare&#8217;s &#8220;Communicating Sequential Processes&#8221;<sup><a href="#R19">19</a></sup> and earlier language experiments, specifically Newsqueak,<sup><a href="#R25">25</a></sup> Alef,<sup><a href="#R31">31</a></sup> and Limbo.<sup><a href="#R12">12</a></sup></p>
+
+<p><a href="https://dl.acm.org/cms/attachment/adbf1491-a272-4242-a978-e5fb274d04c5/f4.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1022,height=737'); return false;">Figure 4</a> shows an alternate version of <code>listen</code>, written to limit the number of connections served at any moment.</p>
+
+<p><a href="https://dl.acm.org/cms/attachment/adbf1491-a272-4242-a978-e5fb274d04c5/f4.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1022,height=737'); return false;"><img loading="lazy" decoding="async" alt="f4.jpg" height="299" src="https://dl.acm.org/cms/attachment/adbf1491-a272-4242-a978-e5fb274d04c5/f4.jpg" width="415"></a><br>
+<strong>Figure 4. A Go network server, limited to 10 connections.</strong></p>
+
+<p>This version of <code>listen</code> begins by creating a channel named <code>ch</code> (line 42) and then starting a pool of 10 server goroutines (lines 44–46), which receive connections from that single channel. As new connections are accepted, <code>listen</code> sends each on <code>ch</code> using a send statement, <code>ch &lt; - conn</code> (line 53). A server executes the receive expression <code>&lt; - ch</code> (line 59), completing the communication. The channel was created without space to buffer values being sent (the default in Go), so after the 10 servers are busy with the first 10 connections, the eleventh <code>ch &lt; - conn</code> will block until a server completes its call to serve and executes a new receive. The blocked communication operations create implicit back pressure on the listener, stopping it from accepting a new connection until it has handed off the previous one.</p>
+
+<p>Note the lack of mutexes or other traditional synchronization mechanisms in these programs. Communication of data values on channels doubles as synchronization; by convention, sending data on a channel passes ownership from sender to receiver. Go has libraries that provide mutexes, condition variables, semaphores, and atomic values for low-level uses, but a channel is often a better choice. In our experience, people reason more easily and more correctly about message passing—using communication to transfer ownership between goroutines—than they do about mutexes and condition variables. An early mantra was, &#8220;Do not communicate by sharing memory; instead, share memory by communicating.&#8221;</p>
+
+<p>Go&#8217;s garbage collector greatly simplifies the design of concurrent APIs, removing questions about which goroutine is responsible for freeing shared data. As in most languages (but unlike Rust<sup><a href="#R22">22</a></sup>), ownership of mutable data is not tracked statically by the type system. Instead, Go integrates with TSAN<sup><a href="#R28">28</a></sup> to provide a dynamic race detector for testing and limited production use.</p>
+<!-- END BODY-6 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-7 -->
+
+<p><a name="body-7"></a></p>
+
+<h3>Security and Safety</h3>
+
+<p>Part of the reason for any new language is to address deficiencies of previous languages, which in Go&#8217;s case included security issues affecting the safety of networked software. Go removes undefined behaviors that cause so many security problems in C and C++ programs. Integer types are not automatically coerced to one another. Null pointer dereferences and out-of-bounds array and slice indexes cause runtime exceptions. There are no dangling pointers into stack frames: Any variable that might possibly outlive its stack frame, such as one captured in a closure, will be moved to the heap instead. There are no dangling pointers in the heap either; the use of a garbage collector instead of manual memory management eliminates use-after-free bugs. Of course, Go doesn&#8217;t fix everything, and there are things that were missed that perhaps should have been addressed. For instance, integer overflow could have been made a runtime error rather than defined to wrap around.</p>
+
+<p>Since Go is a language for writing systems, which can require machine-level operations that break type safety, it is able to coerce pointers from one type to another and to perform address arithmetic, but only through the use of the <code>unsafe</code> package and its restricted special type <code>unsafe.Pointer</code>. Care must be taken to keep type-system violations compatible with the garbage collector—for example, the garbage collector must always be able to identify whether a particular word is an integer or a pointer. In practice, the <code>unsafe</code> package appears very rarely: safe Go is reasonably efficient. Seeing <code>import "unsafe"</code> therefore serves as a signal to inspect a source file more carefully for possible safety problems.</p>
+
+<p>Go&#8217;s safety properties make it a much better fit for cryptographic and other security-critical code than a language such as C or C++. A trivial mistake, such as an out-of-bounds array index, which can lead to sensitive data disclosure or remote execution in C and C++, causes a run-time exception in Go, stopping the program and greatly limiting the potential impact. Go ships with a full suite of cryptography libraries, including SSL/TLS support; the standard library includes a production-ready HTTPS client and server. In fact, Go&#8217;s combination of safety, performance, and high-quality libraries has made it a popular proving ground for modern security work. For example, the freely available certificate authority Let&#8217;s Encrypt depends on Go for its production service<sup><a href="#R2">2</a></sup> and recently crossed a milestone of one billion certificates issued.<sup><a href="#R1">1</a></sup></p>
+<!-- END BODY-7 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-8 -->
+
+<p><a name="body-8"></a></p>
+
+<h3>Completeness</h3>
+
+<p>Go provides the core pieces needed for modern development at the language, library, and tool levels. This requires a careful balance, adding enough to be useful &#8220;out of the box&#8221; while not adding so much that our own development processes bog down trying to support too many features.</p>
+
+<p>The language provides strings, hash maps, and dynamically sized arrays as built-in, easily used data types. As noted earlier, these are sufficient for most Go programs. The result is greater interoperability between Go programs—for example, there are no competing implementations of strings or hash maps to fragment the package ecosystem. Go&#8217;s inclusion of goroutines and channels is another form of completeness. These provide core concurrent functionality required in modern networked programs. Providing them directly in the language, as opposed to a library, makes it easier to tailor the syntax, the semantics, and the implementation to make them as lightweight and easy to use as possible, while providing a uniform approach for all users.</p>
+
+<p>The standard library includes a production-ready HTTPS client and server. For programs that interact with other machines on the Internet, this is critical. Filling that need directly avoids additional fragmentation. We have already seen the <code>io.Writer</code> interface; any output data stream implements this interface by convention and inter-operates with all other I/O adapters. <a href="https://dl.acm.org/cms/attachment/cf29de71-43b7-44ad-8f25-f135dec25b9c/f1.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1021,height=544'); return false;">Figure 1&#8217;s</a> <code>ListenAndServe</code> call, as another example, expects a second argument of type <code>http.Handler</code>, whose definition is shown in <a href="https://dl.acm.org/cms/attachment/90eb89c1-f5b7-4ef3-8014-189f531ab922/f5.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1022,height=196'); return false;">Figure 5</a>. The argument <code>http.HandlerFunc(hello)</code> implements its <code>ServeHTTP</code> method by calling <code>hello</code>. The library creates a new goroutine to handle each connection, as in the listener examples in this article&#8217;s &#8220;Concurrency&#8221; section, so handlers can be written in a simple blocking style, and the server can scale automatically to handle many simultaneous connections.</p>
+
+<p><a href="https://dl.acm.org/cms/attachment/90eb89c1-f5b7-4ef3-8014-189f531ab922/f5.jpg" onclick="window.open(this.href, '', 'resizable=yes,status=no,location=no,toolbar=no,menubar=no,fullscreen=no,scrollbars=no,dependent=no,width=1022,height=196'); return false;"><img loading="lazy" decoding="async" alt="f5.jpg" height="80" src="https://dl.acm.org/cms/attachment/90eb89c1-f5b7-4ef3-8014-189f531ab922/f5.jpg" width="415"></a><br>
+<strong>Figure 5. The net/http package&#8217;s handler interface.</strong></p>
+
+<p>The <code>http</code> package also provides a basic dispatcher, itself another implementation of <code>Handler</code>, which allows different handlers to be registered for different URL paths. Establishing <code>Handler</code> as the agreed-upon interface has enabled many different types of HTTP server middleware to be created and to interoperate. We did not need to add all these implementations to the standard library, but we did need to establish the interface that allows them to work together.</p>
+
+<p>The standard Go distribution also provides integrated support for cross-compilation, testing, profiling, code coverage, fuzzing, and more. Testing is another area where establishing agreement about core concepts—such as what a test case is and how it is run—enabled the creation of custom testing libraries and test execution environments that all interoperate well.</p>
+<!-- END BODY-8 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-9 -->
+
+<p><a name="body-9"></a></p>
+
+<h3>Consistency</h3>
+
+<p>One goal we had for Go was for it to behave the same across different implementations, execution contexts, and even over time. This kind of &#8220;boring&#8221; consistent behavior allows developers to focus on their day-to-day work and allows Go to recede into the background.</p>
+
+<p>To start, the language specifies consistent results as much as possible, even for erroneous behaviors such as null pointer dereferences and out-of-bounds array indexes, as discussed in this article&#8217;s &#8220;Security and Safety&#8221; section. One exception where Go instead requires inconsistent behavior is iteration over hash maps. We found that programmers often inadvertently wrote code that depended on the hash function, causing different results on different architectures or Go implementations.</p>
+
+<p>To make programs behave the same everywhere, one option would have been to mandate a specific hash function. Instead, Go defines that map iteration is non-deterministic. The implementation uses a different random seed for each map and starts each iteration over a map at a random offset in the hash table. The result is that maps are consistently unpredictable across implementations: Code cannot accidentally depend on implementation details. In a similar vein, the race detector adds extra randomness to scheduling decisions, creating more opportunities to observe races.</p>
+
+<hr>
+<blockquote>
+<p><em>When we started designing Go, multicore computers were becoming widely available, but threads remained a heavyweight concept in all popular languages and operating systems.</em></p>
+</blockquote>
+
+<hr>
+<p>Another aspect of consistency is performance over the lifetime of a program. The decision to implement Go using a traditional compiler, instead of the JIT used by languages such as Java and Node.js, provides consistent performance at startup time and for short-lived programs: There is no &#8220;slow start&#8221; penalizing the first few seconds of each process&#8217;s lifetime. This quick startup has made Go an attractive target both for command-line tools, as noted in the previous section, and for scaled network servers such as Google App Engine.<sup><a href="#R30">30</a></sup></p>
+
+<p>Consistent performance includes the overhead of garbage collection. The original Go prototype used a basic, stop-the-world garbage collector that, of course, introduced significant tail latency in network servers. Today, Go uses a fully concurrent garbage collector with pauses taking less than a millisecond,<sup><a href="#R21">21</a></sup> and usually just a few microseconds, independent of heap size. The dominant delay is the time it takes the operating system to deliver a signal to a thread that must be interrupted.</p>
+
+<p>A final kind of consistency is that of the language and libraries over time. For the first few years of Go&#8217;s existence, we tinkered with and adjusted it in each weekly release. Users often had to change their programs when updating to a new Go version. Automated tools reduced the burden, but manual adjustments were also necessary. Starting with Go version 1, released in 2012, we publicly committed to making only backward-compatible changes to the language and standard library, so that programs would continue running unchanged when compiled with newer Go versions.<sup><a href="#R16">16</a></sup> That commitment attracted industry and has encouraged not just long-lived engineering projects but also other efforts, such as books, training courses, and a thriving ecosystem of third-party packages.</p>
+<!-- END BODY-9 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-10 -->
+
+<p><a name="body-10"></a></p>
+
+<h3>Tool-Aided Development</h3>
+
+<p>Large-scale software development requires significant automation and tooling. From the start, Go was designed to encourage such tooling by making it easy to create.</p>
+
+<p>A developer&#8217;s daily experience of Go is through the <code>go</code> command. Unlike language commands that only compile or run code, the <code>go</code> command provides subcommands for all the critical parts of the development cycle: <code>go build</code> and <code>go install</code> build and install executables, <code>go test</code> runs test cases, and <code>go get</code> adds a new dependency. The <code>go</code> command also enables the creation of new tools by providing programmatic access to build details, such as the package graph.</p>
+
+<p>One such tool is <code>go vet</code>, which performs incremental, package-at-a-time program analysis that can be cached the same way that caching compiled object files enables incremental builds. The <code>go vet</code> tool aims to identify common correctness problems with high precision, so that developers are conditioned to heed its reports. Simple examples include checking that formats and arguments match in calls to <code>fmt.Printf</code> and related functions, or diagnosing unused writes to variables or struct fields. These are not compiler errors, because we do not want old code to stop compiling simply because a new possible mistake has been identified. Nor are they compiler warnings; users learn to ignore those. Placing the checks in a separate tool allows them to be run at a time that is convenient for the developer, without interfering with the ordinary build process. It also makes the same checks available to all developers, even when using an alternate implementation of the Go compiler, such as Gccgo<sup><a href="#R15">15</a></sup> or Gollvm.<sup><a href="#R17">17</a></sup> The incremental approach makes these static checks efficient enough that we run them automatically during <code>go test</code>, before running the tests themselves. Testing is a time when users are looking for bugs anyway, and the reports often help explain actual test failures. This incremental framework is available for reuse by other tools as well.</p>
+
+<p>Tooling that analyzes programs is helpful, but tooling that edits programs is even better, especially for program maintenance, much of which is tedious and ripe for automation.</p>
+
+<p>The standard layout of a Go program is defined algorithmically. A tool, <code>gofmt</code>, parses a source file into an abstract syntax tree and then formats it back to source code using consistently applied layout rules.<sup><a href="#R14">14</a></sup> In Go, it is considered a best practice to format code before storing it in source control. This approach enables thousands of developers to work on a shared codebase without the usual debates about brace styles and other details that accompany such large efforts. Even more significantly, tools can modify Go programs by operating on the abstract syntax form and then writing the result using <code>gofmt</code>&#8216;s printer. Only the parts actually changed are touched, resulting in &#8220;diffs&#8221; that match what a person would have arrived at by hand. People and programs can work together seamlessly in the same codebase.</p>
+
+<p>To enable this approach, Go&#8217;s grammar is designed to enable a source file to be parsed without type information or any other external inputs, and there is no preprocessor or other macro system. The Go standard library provides packages to allow tools to recreate the input and output sides of <code>gofmt</code>, along with a full type checker.</p>
+
+<p>Before releasing Go version 1—the first stable Go release—we wrote a refactoring tool called <code>gofix</code>, which used these packages to parse the source, rewrite the tree, and write out well-formatted code. We used <code>gofix</code>, for example, when the syntax of deleting an entry from a map was changed. Each time users updated to a new release, they could run <code>gofix</code> on their source files to automatically apply the majority of the changes required to update to the new version.<sup><a href="#R5">5</a></sup></p>
+
+<p>These techniques also apply to the construction of IDE plug-ins<sup><a href="#R29">29</a></sup> and other tools—profilers, debuggers, analyzers, build automators, test frameworks, and so on—that support Go programmers. Go&#8217;s regular syntax, the established algorithmic code-layout convention, and the direct standard library support make these kinds of tools much easier to build than they would otherwise be. As a result, the Go world has a rich, ever-expanding, and interoperating toolkit.</p>
+<!-- END BODY-10 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-11 -->
+
+<p><a name="body-11"></a></p>
+
+<h3>Libraries</h3>
+
+<p>After the language and tools, the next critical aspect of how users experience Go is the available libraries. As befits a language for distributed computing, in Go there is no central server where Go packages must be published. Instead, each import path beginning with a domain name is interpreted as a URL (with an implicit leading https://) giving the location of remote source code. For example, <code>import "github.com/google/uuid"</code> fetches code hosted in the corresponding GitHub repository.</p>
+
+<p>The most common way to host source code is to point to a public Git or Mercurial server, but private servers are equally well supported, and authors have the option of publishing a static bundle of files rather than opening access to a source-control system. This flexible design and the ease of publishing libraries has created a thriving community of importable Go packages. Relying on domain names avoided a rush to claim valuable entries in a flat package name space.</p>
+
+<p>It is not enough just to download packages; we must know which versions to use as well. Go groups packages into versioned units called modules. A module can specify a minimum required version for one of its dependencies, but no other constraints. When building a particular program, Go resolves competing required versions of a dependency module by selecting the maximum: If one part of the program requires version 1.2.0 of a dependency and another requires version 1.3.0, Go selects version 1.3.0—that is, Go requires the use of semantic versioning,<sup><a href="#R27">27</a></sup> in which version 1.3.0 must be a drop-in replacement for 1.2.0. On the other hand, in that situation, Go will not select version 1.4.0 even when it becomes available, because no part of the program has asked explicitly for that newer version. This rule keeps builds repeat-able and minimizes the potential risk of breakage caused by accidentally breaking changes introduced by new versions.</p>
+
+<p>In semantic versioning, a module may introduce intentional breaking changes only in a new major version, such as 2.0.0. In Go, each major version starting at 2.0.0 is identified by a major version suffix, such as <code>/v2</code>, in its import path: Distinct major versions are kept as separate as any other modules with different names. This approach disallows diamond dependency problems, and in practice it adapts to incompatibilities as well as systems with more finely grained constraints.<sup><a href="#R6">6</a></sup></p>
+
+<p>To improve the reliability and re-producibility of builds downloading packages from all over the Internet, we run two services used by default in the Go toolchain: a public mirror of available Go packages and a cryptographically signed transparent log of their expected contents.<sup><a href="#R8">8</a>,<a href="#R10">10</a>,<a href="#R20">20</a></sup> Even so, widespread use of software packages downloaded from the Internet continues to have security and other risks.<sup><a href="#R7">7</a></sup> We are working on making the Go toolchain able to proactively identify and report vulnerable packages to users.</p>
+<!-- END BODY-11 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-12 -->
+
+<p><a name="body-12"></a></p>
+
+<h3>Conclusion</h3>
+
+<p>Although the design of most languages concentrates on innovations in syntax, semantics, or typing, Go is focused on the software development process itself. Go is efficient, easy to learn, and freely available, but we believe that what made it successful was the approach it took toward writing programs, particularly with multiple programmers working on a shared codebase. The principal unusual property of the language itself—concurrency—addressed problems that arose with the proliferation of multicore CPUs in the 2010s. But more significant was the early work that established fundamentals for packaging, dependencies, build, test, deployment, and other workaday tasks of the software development world, aspects that are not usually foremost in language design.</p>
+
+<p>These ideas attracted like-minded developers who valued the result: easy concurrency, clear dependencies, scalable development and production, secure programs, simple deployment, automatic code formatting, tool-aided development, and more. Those early developers helped popularize Go and seeded the initial Go package ecosystem. They also drove the early growth of the language by, for example, porting the compiler and libraries to Windows and other operating systems (the original release supported only Linux and MacOS X).</p>
+
+<p>Not everyone was a fan—for instance, some people objected to the way the language omitted common features such as inheritance and generic types. But Go&#8217;s development-focused philosophy was intriguing and effective enough that the community thrived while maintaining the core principles that drove Go&#8217;s existence in the first place. Thanks in large part to that community and the technology it has built, Go is now a significant component of the modern cloud computing environment.</p>
+
+<p>Since Go version 1 was released, the language has been all but frozen. The tooling, however, has expanded dramatically, with better compilers, more powerful build and testing tools, and improved dependency management, not to mention a huge collection of open source tools that support Go. Still, change is coming: Go 1.18, released in March 2022, includes the first version of a true change to the language, one that has been widely requested—the first cut at parametric polymorphism. We left any form of generics out of the original language because we were keenly aware that it is very difficult to design well and, in other languages, too often a source of complexity rather than productivity. We considered a handful of designs during Go&#8217;s first decade but only recently found one that we feel fits Go well. Making such a large language change while staying true to the principles of consistency, completeness, and community will be a severe test of the approach.</p>
+<!-- END BODY-12 -->
+
+<p><a href="#">Back to Top</a></p>
+<!-- BEGIN BODY-13 -->
+
+<p><a name="body-13"></a></p>
+
+<h3>Acknowledgments</h3>
+
+<p>The earliest work on Go benefited greatly from advice and help from many colleagues at Google. Since the public release, Go has grown and improved thanks to an expanded Go team at Google along with a tremendous set of open source contributors. Go is now the work of a literal cast of thousands, far too many to enumerate here. We are grateful to everyone who has helped make Go what it is today.</p>
+<!-- END BODY-13 -->
+
+
+</div>
+		</div>
+		<footer class="article-footer">
+			
+<section class="article-references" data-component="accordion" data-slide-to-refs="true">
+	<a name="references"></a>
+	<button class="accordion-controller" aria-expanded="false">
+		<span class="article-references__title">
+			References		</span>
+		<span class="accordion-controller-icon">
+			<svg aria-hidden="true" focusable="false" width="16" height="16" fill="var(--wp--preset--color--cacm-blue)"><use href="#am-symbol-icon-chevron-down"></use></svg>		</span>
+	</button>
+	<ul class="article-references__text accordion-content">
+		<div id="article-references"><a name="references"></a>
+
+
+
+<p><a name="R1"></a>1. Aas, J. and Gran, S. Let&#039;s Encrypt has issued a billion certificates. Let&#039;s Encrypt (2020), <a href="https://letsencrypt.org/2020/02/27/one-billion-certs.html">https://letsencrypt.org/2020/02/27/one-billion-certs.html</a>.</p>
+
+<p><a name="R2"></a>2. Aas, J., et al. Let&#039;s Encrypt: An automated certificate authority to encrypt the entire web. In <em>Proceedings of the 2019 ACM SIGSAC Conf. on Computer and Communications Security</em>, 2473&ndash;2487.</p>
+
+<p><a name="R3"></a>3. Bloch, D. Life on the edge: Monitoring and running a very large Perforce installation. Presented at <em>2007 Perforce User Conf.</em>, <a href="https://go.dev/s/bloch2007">https://go.dev/s/bloch2007</a>.</p>
+
+<p><a name="R4"></a>4. Chang, F., et al. Bigtable: A distributed storage system for structured data. In <em>7<sup>th</sup> USENIX Symposium on Operating Systems Design and Implementation</em> (2006), 205&ndash;218.</p>
+
+<p><a name="R5"></a>5. Cox, R. Introducing Gofix. <em>The Go Blog</em> (2011), <a href="https://go.dev/blog/introducing-gofix">https://go.dev/blog/introducing-gofix</a>.</p>
+
+<p><a name="R6"></a>6. Cox, R. The principles of versioning in Go. (2019), <a href="https://research.swtch.com/vgo-principles">https://research.swtch.com/vgo-principles</a>.</p>
+
+<p><a name="R7"></a>7. Cox, R. Surviving software dependencies. <em>Communications of the ACM 62</em>, 9 (Aug. 2019), 36&ndash;43.</p>
+
+<p><a name="R8"></a>8. Cox, R. Transparent logs for skeptical clients (2019), <a href="https://research.swtch.com/tlog">https://research.swtch.com/tlog</a>.</p>
+
+<p><a name="R9"></a>9. Cox, R. and Pike, R. Go programming. Presented at <em>Google I/O (2010)</em>, <a href="https://www.youtube.com/watch?v=jgVhBThJdXc">https://www.youtube.com/watch?v=jgVhBThJdXc</a>.</p>
+
+<p><a name="R10"></a>10. Crosby, S.A. and Wallach, D.S. Efficient data structures for tamper-evident logging. In <em>Proceedings of the 18<sup>th</sup> USENIX Security Symp.</em> (2009), 317&ndash;334.</p>
+
+<p><a name="R11"></a>11. Donovan, A.A.A. and Kernighan, B.W. <em>The Go Programming Language.</em> Addison-Wesley, USA (2015).</p>
+
+<p><a name="R12"></a>12. Dorward, S., Pike, R., and Winterbottom, P. Programming in Limbo. In <em>IEEE COMPCON 97 Proceedings</em> (1997), 245&ndash;250.</p>
+
+<p><a name="R13"></a>13. Geissmann, L.B. Separate compilation in Modula-2 and the structure of the Modula-2 compiler on the personal computer Lilith. Ph.D. dissertation. Swiss Federal Institute of Technology (1983), <a href="https://www.cfbsoftware.com/modula2/ETH7286.pdf">https://www.cfbsoftware.com/modula2/ETH7286.pdf</a>.</p>
+
+<p><a name="R14"></a>14. Gerrand, A. Go fmt your code. <em>The Go Blog</em> (2013), <a href="https://go.dev/blog/gofmt">https://go.dev/blog/gofmt</a>.</p>
+
+<p><a name="R15"></a>15. Go Project. Setting up and using gccgo. (2009), <a href="https://go.dev/doc/install/gccgo">https://go.dev/doc/install/gccgo</a>.</p>
+
+<p><a name="R16"></a>16. Go Project. Go 1 and the future of Go programs. (2012), <a href="https://go.dev/doc/go1compat">https://go.dev/doc/go1compat</a>.</p>
+
+<p><a name="R17"></a>17. Go Project. Gollvm, an LLVM-based Go compiler. (2017), <a href="https://go.googlesource.com/gollvm/">https://go.googlesource.com/gollvm/</a>.</p>
+
+<p><a name="R18"></a>18. Go Project. The Go programming language specification. (2021), <a href="https://go.dev/ref/spec">https://go.dev/ref/spec</a>.</p>
+
+<p><a name="R19"></a>19. Hoare, C.A.R. <em>Communicating Sequential Processes.</em> Prentice-Hall, Inc., USA (1985).</p>
+
+<p><a name="R20"></a>20. Hockman, K. Go Module Proxy: Life of a query. Presented at <em>GopherCon 2019</em>, <a href="https://www.youtube.com/watch?v=KqTySYYhPUE">https://www.youtube.com/watch?v=KqTySYYhPUE</a></p>
+
+<p><a name="R21"></a>21. Hudson, R.L. Getting to Go: The journey of Go&#039;s garbage collector. <em>The Go Blog</em> (2018), <a href="https://go.dev/blog/ismmkeynote">https://go.dev/blog/ismmkeynote</a>.</p>
+
+<p><a name="R22"></a>22. Klabnik, S. and Nichols, C. <em>The Rust Programming Language.</em> No Starch Press, USA (2018).</p>
+
+<p><a name="R23"></a>23. Lam, A. Using remote cache service for Bazel. <em>Communications of the ACM 62</em>, 1 (Dec. 2018), 38&ndash;42.</p>
+
+<p><a name="R24"></a>24. Ousterhout, J. Why threads are a bad idea (for most purposes). (1995), <a href="https://web.stanford.edu/~ouster/cgi-bin/papers/threads.pdf">https://web.stanford.edu/~ouster/cgi-bin/papers/threads.pdf</a></p>
+
+<p><a name="R25"></a>25. Pike, R. The implementation of Newsqueak. <em>Software: Practice and Experience 20</em>, 7 (1990), 649&ndash;659.</p>
+
+<p><a name="R26"></a>26. Pike, R., Dorward, S., Griesemer, R., and Quinlan, S. Interpreting the data: Parallel analysis with Sawzall. <em>Scientific Programming Journal 13</em> (2005), 277&ndash;298.</p>
+
+<p><a name="R27"></a>27. Preston-Werner, T. Semantic versioning 2.0.0. (2013), <a href="https://semver.org/">https://semver.org/</a></p>
+
+<p><a name="R28"></a>28. Serebryany, K., Potapenko, A., Iskhodzhanov, T., and Vyukov, D. Dynamic race detection with LLVM compiler: Compile-time instrumentation for ThreadSanitizer. In <em>Runtime Verification</em>, S. Khurshid, and K. Sen (Eds.). Springer Berlin Heidelberg, Berlin, Heidelberg (2012), 110&ndash;114.</p>
+
+<p><a name="R29"></a>29. Stambler, R. Go, pls stop breaking my editor. Presented at <em>GopherCon 2019</em>, <a href="https://www.youtube.com/watch?v=EFJfdWzBHwE">https://www.youtube.com/watch?v=EFJfdWzBHwE</a>.</p>
+
+<p><a name="R30"></a>30. Symonds, D., Tao, N., and Gerrand, A. Go and Google App Engine. <em>The Go Blog</em> (2011), <a href="https://go.dev/blog/appengine">https://go.dev/blog/appengine</a></p>
+
+<p><a name="R31"></a>31. Winterbottom, P. Alef language reference manual. In <em>Plan 9: Programmer&#039;s Manual Volume 2.</em> Harcourt Brace and Co., New York (1996).</p>
+</div>	</ul>
+</section>
+<section id="authors" class="article-authors" data-component="accordion">
+	<button class="accordion-controller" aria-expanded="false">
+		<span class="article-authors__title">
+			About the Authors		</span>
+		<span class="accordion-controller-icon">
+			<svg aria-hidden="true" focusable="false" width="16" height="16" fill="var(--wp--preset--color--cacm-blue)"><use href="#am-symbol-icon-chevron-down"></use></svg>		</span>
+	</button>
+	<div class="article-authors__info accordion-content">
+		<div class="article-authors__info-text">
+			<div id="article-authorinfo"><a name="authorinfo"></a>
+
+<h4>Authors</h4>
+
+<p><strong>Russ Cox</strong> (<a href="mailto:rsc@go.dev">rsc@go.dev</a>), created the Go programming language and environment as software engineers at Google in Mountain View, California, USA. Cox, Griesemer, and Taylor continue to lead the Go project at Google, while Pike and Thompson have since retired.</p>
+
+<p><strong>Robert Griesemer</strong> created the Go programming language and environment as software engineers at Google in Mountain View, California, USA. Cox, Griesemer, and Taylor continue to lead the Go project at Google, while Pike and Thompson have since retired.</p>
+
+<p><strong>Rob Pike</strong> created the Go programming language and environment as software engineers at Google in Mountain View, California, USA. Cox, Griesemer, and Taylor continue to lead the Go project at Google, while Pike and Thompson have since retired.</p>
+
+<p><strong>Ian Lance Taylor</strong> created the Go programming language and environment as software engineers at Google in Mountain View, California, USA. Cox, Griesemer, and Taylor continue to lead the Go project at Google, while Pike and Thompson have since retired.</p>
+
+<p><strong>Ken Thompson</strong> created the Go programming language and environment as software engineers at Google in Mountain View, California, USA. Cox, Griesemer, and Taylor continue to lead the Go project at Google, while Pike and Thompson have since retired.</p>
+</div>		</div>
+	</div>
+</section>
+
+<ul class="share">
+	
+<li class="share-link" data-component="share">
+	<a href="#" class="share-toggle">
+		<svg aria-hidden="true" focusable="false" width="19" height="18" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-share"></use></svg>		<span class="share-link-text">
+			Share		</span>
+	</a>
+	<ul class="share-menu" aria-hidden="true">
+		<li>
+			<a href="https://twitter.com/intent/tweet?url=https://cacm.acm.org/research/the-go-programming-language-and-environment/&#038;text=The%20Go%20Programming%20Language%20and%20Environment" target="_blank">
+				Twitter			</a>
+		</li>
+		<li>
+			<a href="http://www.reddit.com/submit?url=https://cacm.acm.org/research/the-go-programming-language-and-environment/&#038;title=The%20Go%20Programming%20Language%20and%20Environment" target="_blank">
+				Reddit			</a>
+		</li>
+		<li>
+			<a href="https://news.ycombinator.com/submitlink?u=https://cacm.acm.org/research/the-go-programming-language-and-environment/&#038;t=The%20Go%20Programming%20Language%20and%20Environment" target="_blank">
+				Hacker News			</a>
+		</li>
+		<li>
+			<a href="https://www.linkedin.com/sharing/share-offsite/?url=https://cacm.acm.org/research/the-go-programming-language-and-environment/" target="_blank">
+				LinkedIn			</a>
+		</li>
+	</ul>
+</li>
+
+<li class="share-link share-link-pdf">
+	<a href="https://dl.acm.org/doi/pdf/10.1145/3488716" target="_blank">
+		<svg aria-hidden="true" focusable="false" width="19" height="20" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-pdf-download"></use></svg>		<span class="share-link-text">
+			Download PDF		</span>
+	</a>
+</li>
+
+<li class="share-link share-link-print" data-component="print">
+	<a href="#" class="print">
+		<svg aria-hidden="true" focusable="false" width="19" height="20" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-print"></use></svg>		<span class="share-link-text">
+			Print		</span>
+	</a>
+</li>
+
+	<li class="share-link share-link-discussion" data-component="share">
+		<a class="share-link-comments" href="#comments">
+			<svg aria-hidden="true" focusable="false" width="19" height="20" fill="var(--cacm--symbol--fill)"><use href="#am-symbol-icon-comment"></use></svg>			<span class="share-link-text">Join the Discussion</span>
+		</a>
+	</li>
+</ul>
+		</footer>
+		<div class="article-authors-digital-library">
+			<section class="article-submission">
+	<div class="article-submission__cta">
+		<div class="article-submission__cta-container">
+			<p class="article-submission__cta-title">
+				Submit an Article to CACM			</p>
+			<p class="article-submission__cta-text">
+				CACM welcomes unsolicited <a href="https://cacm.acm.org/author-guidelines/#CACMsubmission">submissions</a> on topics of relevance and value to the computing community.			</p>
+		</div>
+	</div>
+</section>
+
+<section class="article-digital-library">
+	<div class="article-digital-library__article-info">
+		<p class="article-digital-library__intro-text">
+			You Just Read		</p>
+		<h4 class="article-digital-library__title">
+			The Go Programming Language and Environment		</h4>
+					<a class="article-digital-library__link" href="https://dl.acm.org/doi/10.1145/3488716">
+				<svg aria-hidden="true" focusable="false" width="21" height="21" fill="var(--wp--preset--color--cacm-black)"><use href="#am-symbol-icon-digital-library"></use></svg>				View in the ACM Digital Library				<svg aria-hidden="true" focusable="false" width="14" height="9" fill="var(--wp--preset--color--cacm-black)" class="icon-dl"><use href="#am-symbol-icon-arrow-right"></use></svg>			</a>
+			</div>
+	<div class="article-digital-library__copyright-info">
+		<div id="article-permission">
+<a name="permission"></a>
+
+<p><img alt="cacm_ccby.gif" src="https://dl.acm.org/cms/attachment/97621abb-3082-4ad0-828e-6385419f7397/cacm_ccby.gif" /> This work is licensed under a <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
+</div>		<p>The Digital Library is published by the Association for Computing Machinery. Copyright&nbsp;&copy;&nbsp;2022 ACM, Inc.</p>	</div>
+</section>
+		</div>
+		<div class="article-sidebar">
+			<section class="article-doi">
+		<h3 class="article-doi__heading">DOI</h3>
+	10.1145/3488716</section>
+<section class="article-issue">
+	<div class="article-issue__meta">
+		<h3 class="article-issue__heading">May 2022 Issue</h3>
+					<p class="article-issue__pub-date">Published: May 1, 2022</p>
+							<p class="article-issue__vol-info">Vol. 65 No. 5</p>
+							<p class="article-issue__page-info">Pages: 70-78</p>
+			</div>
+			<a href="https://cacm.acm.org/issue/may-2022/" class="article-issue__toc-link">
+			Table of Contents			<span class="article-issue__toc-icon-arrow"><svg aria-hidden="true" focusable="false" width="14" height="9" fill="var(--wp--preset--color--cacm-blue)"><use href="#am-symbol-icon-arrow-right"></use></svg></span>
+		</a>
+	</section>
+
+<section class="article-related">
+	<div class="article-related-content">
+		<h3 class="article-related__heading">Related Reading</h3>
+		<!-- Related reading post list -->
+		<ul>
+							<li class="article-related-item">
+					<p class="article-related-section">
+						<a href="https://cacm.acm.org/section/practice/">Practice</a>					</p>
+					<p class="article-related-title">
+						<a href="https://cacm.acm.org/practice/fifty-years-of-open-source-software-supply-chain-security/">
+							Fifty Years of Open Source Software Supply-Chain Security						</a>
+					</p>
+					<p class="article-related-topic">
+						<a href="https://cacm.acm.org/category/security-and-privacy/">Security and Privacy</a>					</p>
+				</li>
+							<li class="article-related-item">
+					<p class="article-related-section">
+						<a href="https://cacm.acm.org/section/blogcacm/">BLOG@CACM</a>					</p>
+					<p class="article-related-title">
+						<a href="https://cacm.acm.org/blogcacm/giving-go-a-go-simplifying-cloud-infrastructure-development/">
+							Giving Go a Go: Simplifying Cloud Infrastructure Development						</a>
+					</p>
+					<p class="article-related-topic">
+						<a href="https://cacm.acm.org/category/software-engineering-and-programming-languages/">Software Engineering and Programming Languages</a>					</p>
+				</li>
+							<li class="article-related-item">
+					<p class="article-related-section">
+						<a href="https://cacm.acm.org/section/opinion/">Opinion</a>					</p>
+					<p class="article-related-title">
+						<a href="https://cacm.acm.org/opinion/go-ing-to-the-cloud/">
+							Go-ing to the Cloud						</a>
+					</p>
+					<p class="article-related-topic">
+						<a href="https://cacm.acm.org/category/software-engineering-and-programming-languages/">Software Engineering and Programming Languages</a>					</p>
+				</li>
+							<li class="article-related-item">
+					<p class="article-related-section">
+						<a href="https://cacm.acm.org/section/opinion/">Opinion</a>					</p>
+					<p class="article-related-title">
+						<a href="https://cacm.acm.org/opinion/beyond-blocks/">
+							Beyond Blocks: Syntax and Semantics						</a>
+					</p>
+					<p class="article-related-topic">
+						<a href="https://cacm.acm.org/category/computing-profession/">Computing Profession</a>					</p>
+				</li>
+					</ul>
+	</div>
+</section>
+
+<div class="ad ad-mobile ad--is-loading" data-component="ad" data-platform="mobile" data-show-ad="false">
+		<div class="cacm-ad-unit">
+		<p class="ad-label">Advertisement</p>
+		<div class="ad-unit" data-pipeline-id="684700" data-dimension-id="599027"></div>
+		<noscript><a href="https://acm.nui.media/pipeline/684700/0/cc?z=acm"><img src="https://acm.nui.media/pipeline/684700/0/vc?z=acm&#038;dim=599027&#038;kw=&#038;click=&#038;abr=$imginiframe" alt="" ></a></noscript>
+	</div>
+	</div>
+
+<div class="ad ad-desktop ad--is-loading" data-component="ad" data-platform="desktop" data-show-ad="false">
+		<div class="cacm-ad-unit">
+		<p class="ad-label">Advertisement</p>
+		<div class="ad-unit" data-pipeline-id="684700" data-dimension-id="599027"></div>
+		<noscript><a href="https://acm.nui.media/pipeline/684700/0/cc?z=acm"><img src="https://acm.nui.media/pipeline/684700/0/vc?z=acm&#038;dim=599027&#038;kw=&#038;click=&#038;abr=$imginiframe" alt="" ></a></noscript>
+	</div>
+	</div>
+		</div>
+		
+<section class="article-comments">
+	<div class="article-comments__inner container">
+		<h3 class="article-comments__heading">
+			Join the Discussion (0)		</h3>
+		
+<section class="cta-join-the-discussion" id="article-discussion">
+	<div class="cta-join-the-discussion__box">
+		<h4 class="cta-join-the-discussion__heading">Become a Member or Sign In to Post a Comment</h4>
+		<div class="cta-join-the-discussion__button-group">
+			<a class="cta-join-the-discussion__button cta-join-the-discussion__button--login" href="https://cacm.acm.org/wp-login.php?saml_sso">Sign In</a>
+			<a class="cta-join-the-discussion__button cta-join-the-discussion__button--signup" href="https://accounts.acm.org/">Sign Up</a>
+		</div>
+	</div>
+</section>
+		
+<div id="comments" class="comments-area">
+
+	
+		<div id="respond" class="auth-comment-form" data-component="authCommentForm" data-replytocom="0">
+		<div class="auth-comment-form__contents">
+			<span class="auth-comment-form__loader">
+				<svg version="1.1" id="L9" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
+					<path fill="var(--wp--preset--color--cacm-blue)" d="M73,50c0-12.7-10.3-23-23-23S27,37.3,27,50 M30.9,50c0-10.5,8.5-19.1,19.1-19.1S69.1,39.5,69.1,50">
+						<animateTransform
+							attributeName="transform"
+							attributeType="XML"
+							type="rotate"
+							dur="1s"
+							from="0 50 50"
+							to="360 50 50"
+							repeatCount="indefinite" />
+					</path>
+				</svg>
+			</span>
+		</div>
+	</div>
+
+</div><!-- #comments -->
+	</div>
+</section>
+
+		<section
+			class="post-list the-latest"
+			data-layout="grid-three-up"
+			data-component="postList"
+		>
+							
+		<header class="section-header ">
+			<h3				class="section-header__heading"
+			>
+									<a class="section-header__heading-link" href="/?s=">
+						The Latest from CACM					</a>
+							</h3>
+							<div class="section-header__readmore">
+					<a class="section-header__readmore-link" href="/?s=" aria-label="
+						Explore more from The Latest from CACM					">
+						<span class="section-header__readmore-text">Explore More</span>
+						<span class="section-header__readmore-icon"><svg aria-hidden="true" focusable="false" width="14" height="9"><use href="#am-symbol-icon-arrow-right"></use></svg></span>
+					</a>
+				</div>
+								</header>
+
+					
+			<div class="">
+				<div class="post-list__content"><div class="post-list__item">
+	<article id="post-811008" class="post-list__post post-811008 post type-post status-publish format-standard has-post-thumbnail hentry category-artificial-intelligence-machine-learning category-computing-applications category-data-and-information section-blogcacm">
+		<div class="post-list__post-content">
+			<div class="post-list__post-text">
+									<div class="post-list__post-eyebrow">
+						<a href="https://cacm.acm.org/section/blogcacm/">BLOG@CACM</a>																			<span class="post-list__post-timestamp"><span class="posted-on"> <time datetime="2026-08-14T16:05:56-04:00">Aug 14 2026</time></span></span>
+																	</div>
+													<p class="post-list__post-heading">
+						<a href="https://cacm.acm.org/blogcacm/from-rule-based-automation-to-ai-agents-the-future-of-enterprise-applications/">From Rule-Based Automation to AI Agents: The Future of Enterprise Applications</a>
+					</p>
+												<div class="post-list__post-meta-group">
+											<div class="post-list__post-byline">
+							 Fiza Ashraf						</div>
+																<span class="post-list__post-topic"><a href="https://cacm.acm.org/category/artificial-intelligence-machine-learning/">Artificial Intelligence and Machine Learning</a></span>
+									</div>
+			</div>
+							<figure class="post-list__post-figure">
+					<a href="https://cacm.acm.org/blogcacm/from-rule-based-automation-to-ai-agents-the-future-of-enterprise-applications/" aria-label="From Rule-Based Automation to AI Agents: The Future of Enterprise Applications" aria-hidden="true" tabindex="-1">
+													<div class="image-wrapper image-wrapper--widescreen"><img width="800" height="450" src="https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?w=800&amp;h=450&amp;crop=1" class="attachment-cacm-card size-cacm-card" alt="abstract design" decoding="async" loading="lazy" srcset="https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg 2400w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=300,169 300w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=768,432 768w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=1024,576 1024w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=1536,864 1536w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=2048,1152 2048w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=1600,900 1600w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=800,450 800w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.From-Rule-G.jpg?resize=620,349 620w" sizes="auto, (max-width: 800px) 100vw, 800px" /></div>											</a>
+				</figure>
+					</div>
+	</article>
+</div>
+
+<div class="post-list__item">
+	<article id="post-810929" class="post-list__post post-810929 post type-post status-publish format-standard has-post-thumbnail hentry category-computing-applications category-security-and-privacy category-systems-and-networking section-blogcacm">
+		<div class="post-list__post-content">
+			<div class="post-list__post-text">
+									<div class="post-list__post-eyebrow">
+						<a href="https://cacm.acm.org/section/blogcacm/">BLOG@CACM</a>																			<span class="post-list__post-timestamp"><span class="posted-on"> <time datetime="2026-08-14T15:35:23-04:00">Aug 14 2026</time></span></span>
+																	</div>
+													<p class="post-list__post-heading">
+						<a href="https://cacm.acm.org/blogcacm/refunds-and-reversals-when-stablecoin-payments-are-final/">Refunds and Reversals When Stablecoin Payments Are Final</a>
+					</p>
+												<div class="post-list__post-meta-group">
+											<div class="post-list__post-byline">
+							 <a href="https://cacm.acm.org/author/sriram-ramakrishnan/" title="Posts by Sriram Ramakrishnan" class="author url fn" rel="author">Sriram Ramakrishnan</a>						</div>
+																<span class="post-list__post-topic"><a href="https://cacm.acm.org/category/computing-applications/">Computing Applications</a></span>
+									</div>
+			</div>
+							<figure class="post-list__post-figure">
+					<a href="https://cacm.acm.org/blogcacm/refunds-and-reversals-when-stablecoin-payments-are-final/" aria-label="Refunds and Reversals When Stablecoin Payments Are Final" aria-hidden="true" tabindex="-1">
+													<div class="image-wrapper image-wrapper--widescreen"><img width="800" height="450" src="https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?w=800&amp;h=450&amp;crop=1" class="attachment-cacm-card size-cacm-card" alt="train rail tracks" decoding="async" loading="lazy" srcset="https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg 2400w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=300,169 300w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=768,432 768w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=1024,576 1024w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=1536,864 1536w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=2048,1152 2048w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=1600,900 1600w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=800,450 800w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.Refunds-and-G.jpg?resize=620,349 620w" sizes="auto, (max-width: 800px) 100vw, 800px" /></div>											</a>
+				</figure>
+					</div>
+	</article>
+</div>
+
+<div class="post-list__item">
+	<article id="post-810899" class="post-list__post post-810899 post type-post status-publish format-standard has-post-thumbnail hentry category-architecture-and-hardware category-computing-applications category-computing-profession category-data-and-information category-security-and-privacy category-society section-blogcacm">
+		<div class="post-list__post-content">
+			<div class="post-list__post-text">
+									<div class="post-list__post-eyebrow">
+						<a href="https://cacm.acm.org/section/blogcacm/">BLOG@CACM</a>																			<span class="post-list__post-timestamp"><span class="posted-on"> <time datetime="2026-08-14T11:44:29-04:00">Aug 14 2026</time></span></span>
+																	</div>
+													<p class="post-list__post-heading">
+						<a href="https://cacm.acm.org/blogcacm/why-iso-standards-matter-for-iot-security-and-customer-trust/">Why ISO Standards Matter for IoT Security and Customer Trust</a>
+					</p>
+												<div class="post-list__post-meta-group">
+											<div class="post-list__post-byline">
+							 <a href="https://cacm.acm.org/author/anuoluwapo-odusami/" title="Posts by Anuoluwapo Odusami" class="author url fn" rel="author">Anuoluwapo Odusami</a>						</div>
+																<span class="post-list__post-topic"><a href="https://cacm.acm.org/category/architecture-and-hardware/">Architecture and Hardware</a></span>
+									</div>
+			</div>
+							<figure class="post-list__post-figure">
+					<a href="https://cacm.acm.org/blogcacm/why-iso-standards-matter-for-iot-security-and-customer-trust/" aria-label="Why ISO Standards Matter for IoT Security and Customer Trust" aria-hidden="true" tabindex="-1">
+													<div class="image-wrapper image-wrapper--widescreen"><img width="800" height="450" src="https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?w=800&amp;h=450&amp;crop=1" class="attachment-cacm-card size-cacm-card" alt="happy faces on tech background" decoding="async" loading="lazy" srcset="https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg 2044w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?resize=300,169 300w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?resize=768,432 768w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?resize=1024,576 1024w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?resize=1536,864 1536w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?resize=1600,900 1600w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?resize=800,450 800w, https://cacm.acm.org/wp-content/uploads/2026/08/081426.BLOG_.ISO-Standards-G.jpg?resize=620,349 620w" sizes="auto, (max-width: 800px) 100vw, 800px" /></div>											</a>
+				</figure>
+					</div>
+	</article>
+</div>
+
+</div>			</div>
+
+		</section>
+
+		
+<div class="cta-membership cta-membership--no-js" data-component="ctaMembership">
+	
+		<section class="cta-become-a-member">
+			<div class="cta-become-a-member__inner container">
+				<h3					class="cta-become-a-member__heading">
+					Shape the Future of Computing				</h3>
+									<p class="cta-become-a-member__description">
+						ACM encourages its members to take a direct hand in shaping the future of the association. There are more ways than ever to get involved.					</p>
+													<a class="cta-become-a-member__link" href="https://www.acm.org/about-acm/get-involved">
+						Get Involved											</a>
+							</div>
+		</section>
+
+		
+		<section class="cta-open-access">
+			<div class="cta-open-access__inner container">
+				<h3					class="cta-open-access__heading">
+					Communications of the ACM (CACM) is now a fully Open Access publication.				</h3>
+									<p class="cta-open-access__description">
+						By opening CACM to the world, we hope to increase engagement among the broader computer science community and encourage non-members to discover the rich resources ACM has to offer.					</p>
+													<a class="cta-open-access__link" href="https://cacm.acm.org/news/cacm-is-becoming-open-access">
+						Learn More											</a>
+							</div>
+		</section>
+
+		</div>
+
+	
+</article><!-- #post-## -->
+
+			</main>
+		</div>
+	</div><!-- #content -->
+
+	<footer id="colophon" class="site-footer">
+		<div class="site-footer__inner container">
+			<div class="site-footer__columns">
+				<div class="site-footer__column site-footer__column-branding">
+					<a class="site-footer__logo" aria-label="Home" href="https://cacm.acm.org">
+						<svg aria-hidden="true" focusable="false" width="548" height="88" fill="#FFF"><use href="#am-symbol-cacm-logo"></use></svg>					</a>
+					<nav class="social-navigation">
+		<ul class="social-navigation__list">
+		<li>
+			<a href="https://twitter.com/cacmmag">
+				<span class="screen-reader-only">CACM on Twitter</span>
+				<svg aria-hidden="true" focusable="false" width="38" height="38" fill="#fff"><use href="#am-symbol-icon-social-twitter"></use></svg>			</a>
+		</li>
+		<li>
+			<a href="https://www.reddit.com/user/TheOfficialACM">
+				<span class="screen-reader-only">CACM on Reddit</span>
+				<svg aria-hidden="true" focusable="false" width="38" height="38" fill="#fff"><use href="#am-symbol-icon-social-reddit"></use></svg>			</a>
+		</li>
+		<li>
+			<a href="https://www.linkedin.com/groups/36836/">
+				<span class="screen-reader-only">CACM on LinkedIn</span>
+				<svg aria-hidden="true" focusable="false" width="38" height="38" fill="#fff"><use href="#am-symbol-icon-social-linkedin"></use></svg>			</a>
+		</li>
+	</ul>
+</nav>
+				</div>
+				<div class="site-footer__column site-footer__column-topics">
+					
+<div class="site-footer__topics-menu">
+			<p class="site-footer__heading">
+			Topics		</p>
+		<ul class="site-footer__topics-menu__list">
+												<li>
+					<a href="https://cacm.acm.org/category/architecture-and-hardware/">
+						Architecture and Hardware					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/artificial-intelligence-machine-learning/">
+						Artificial Intelligence and Machine Learning					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/computer-history/">
+						Computer History					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/computing-applications/">
+						Computing Applications					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/computing-profession/">
+						Computing Profession					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/data-and-information/">
+						Data and Information					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/education/">
+						Education					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/hci/">
+						HCI					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/philosophy-of-computing/">
+						Philosophy of Computing					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/security-and-privacy/">
+						Security and Privacy					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/society/">
+						Society					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/software-engineering-and-programming-languages/">
+						Software Engineering and Programming Languages					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/systems-and-networking/">
+						Systems and Networking					</a>
+				</li>
+															<li>
+					<a href="https://cacm.acm.org/category/theory/">
+						Theory					</a>
+				</li>
+							</ul>
+	</div>
+				</div>
+				<div class="site-footer__column site-footer__column-about">
+					<div class="site-footer__menu-magazine">
+						<p class="site-footer__heading">Magazine</p>
+						<ul id="menu-magazine-footer" class="site-footer__menu-magazine-menu"><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-217988"><a href="/issue/latest/" id="menu-link-10">Latest Issue</a></li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-217989"><a href="/issues/" id="menu-link-11">Magazine Archive</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224644"><a href="https://cacm.acm.org/editorial-staff-board/" id="menu-link-12">Editorial Staff and Board</a></li>
+<li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-751386"><a href="https://cacm.acm.org/author-guidelines#CACMsubmission" id="menu-link-13">Submit an Article</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224585"><a href="https://cacm.acm.org/feeds-2/" id="menu-link-14">Alerts &#038; Feeds</a></li>
+<li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224645"><a href="https://cacm.acm.org/author-guidelines/" id="menu-link-15">Author Guidelines</a></li>
+</ul>					</div>
+					<div class="site-footer__menu-communications">
+						<p class="site-footer__heading">Communications of the ACM</p>
+						<ul id="menu-communications-footer" class="site-footer-communications-menu"><li id="menu-item-224637" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224637"><a href="https://cacm.acm.org/about-us/" id="menu-link-16">About Us</a></li>
+<li id="menu-item-224664" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224664"><a href="https://cacm.acm.org/faq/" id="menu-link-17">Frequently Asked Questions</a></li>
+<li id="menu-item-224638" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224638"><a href="https://cacm.acm.org/contact-us/" id="menu-link-18">Contact Us</a></li>
+<li id="menu-item-217972" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-217972"><a href="https://www.acm.org/publications/advertising" id="menu-link-19">For Advertisers</a></li>
+<li id="menu-item-224639" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-224639"><a href="https://cacm.acm.org/join-acm/" id="menu-link-20">Join ACM</a></li>
+</ul>					</div>
+				</div>
+			</div>
+			<div class="site-footer__info">
+				<div class="site-footer__info__inner">
+					<p class="site-footer__info-copyright"><small>
+						&copy; 2026 Communications of the ACM. All Rights Reserved. 						</small></p>
+					<div class="menu-policy-menu-container"><ul id="menu-policy-footer" class="site-footer__info-policy-list"><li id="menu-item-217993" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-217993"><a href="https://www.acm.org/cookie-notice" id="menu-link-21">Cookie Notice</a></li>
+<li id="menu-item-217994" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-217994"><a href="https://www.acm.org/about-acm/privacy-policy" id="menu-link-22">Privacy Policy</a></li>
+</ul></div>				</div>
+			</div>
+		</div>
+	</footer><!-- #colophon -->
+</div><!-- #page -->
+
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/cacm/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="wp-hooks-js" src="https://cacm.acm.org/wp-includes/js/dist/hooks.min.js?ver=7496969728ca0f95732d"></script>
+<script id="wp-i18n-js" src="https://cacm.acm.org/wp-includes/js/dist/i18n.min.js?ver=781d11515ad3d91786ec"></script>
+<script id="wp-i18n-js-after">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+//# sourceURL=wp-i18n-js-after
+</script>
+<script id="wp-parsely-loader-js-before">
+window.wpParselySiteId = 'acm.org';
+//# sourceURL=wp-parsely-loader-js-before
+</script>
+<script id="wp-parsely-loader-js" src="https://cacm.acm.org/wp-content/mu-plugins/wp-parsely-3.23/build/loader.js?ver=ecf94842061bea03d54b"></script>
+<script id="parsely-cfg" data-parsely-site="acm.org" src="https://cdn.parsely.com/keys/acm.org/p.js?ver=3.23.5"></script>
+<script id="cacm-global-js" src="https://cacm.acm.org/wp-content/themes/cacm/client/build/js/global.bundle.min.js?ver=f69f000d08ebe0f4ffa5"></script>
+<script id="cacm-article-js-extra">
+var cacmLocalVars = {"restCommentsUrl":"https://cacm.acm.org/wp-json/wp/v2/comments","restCommentFormUrl":"https://cacm.acm.org/wp-json/cacm-plugin/v1/comment/form/125722"};
+//# sourceURL=cacm-article-js-extra
+</script>
+<script id="cacm-article-js" src="https://cacm.acm.org/wp-content/themes/cacm/client/build/js/article.bundle.min.js?ver=43492de855929f3c4cbf"></script>
+<script async data-wp-strategy="async" fetchpriority="low" id="comment-reply-js" src="https://cacm.acm.org/wp-includes/js/comment-reply.min.js?ver=7.0.4"></script>
+<script id="jetpack-stats-js-before">
+_stq = window._stq || [];
+_stq.push([ "view", {"v":"ext","blog":"212686646","post":"125722","tz":"-4","srv":"cacm.acm.org","hp":"vip","j":"1:16.0.1"} ]);
+_stq.push([ "clickTrackerInit", "212686646", "125722" ]);
+//# sourceURL=jetpack-stats-js-before
+</script>
+<script data-wp-strategy="defer" defer fetchpriority="low" id="jetpack-stats-js" src="https://stats.wp.com/e-202633.js"></script>
+
+
+<!-- Mopinion Pastea.se  start --><script type="text/javascript">(function(){var id="Sh2m7XRvbVWoA8uJG6g2wIBNDLfpsOxFx1ciwKwo";var js=document.createElement("script");js.setAttribute("type","text/javascript");js.setAttribute("src","//deploy.mopinion.com/js/pastease.js");js.async=true;document.getElementsByTagName("head")[0].appendChild(js);var t=setInterval(function(){try{Pastease.load(id);clearInterval(t)}catch(e){}},50)})();</script> <!-- Mopinion Pastea.se end -->
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2c4f10aee5d0d23',t:'MTc4NjkzMDUyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

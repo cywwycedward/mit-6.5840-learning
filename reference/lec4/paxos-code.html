@@ -1,0 +1,40 @@
+
+<pre>
+
+        --- Paxos Proposer ---
+      	
+     1	proposer(v):
+     2    while not decided:
+     2	    choose n, unique and higher than any n seen so far
+     3	    send prepare(n) to all servers including self
+     4	    if prepare_ok(n, n<sub>a</sub>, v<sub>a</sub>) from majority:
+     5	      v' = v<sub>a</sub> with highest n<sub>a</sub>; choose own v otherwise   
+     6	      send accept(n, v') to all
+     7	      if accept_ok(n) from majority:
+     8	        send decided(v') to all
+      	
+        
+        --- Paxos Acceptor ---
+
+     9	state on each node (persistent):
+    10	 n<sub>p</sub>     --- highest prepare seen
+    11	 n<sub>a</sub>, v<sub>a</sub> --- highest accept seen
+      	
+    12	prepare(n) handler:
+    13	 if n > n<sub>p</sub>
+    14	   n<sub>p</sub> = n
+    15	   reply prepare_ok(n, n<sub>a</sub>, v<sub>a</sub>)
+    16   else
+    17     reply reject
+      	
+      	
+    18	accept(n, v) handler:
+    19	 if n >= n<sub>p</sub>
+    20	   n<sub>p</sub> = n
+    21	   n<sub>a</sub> = n
+    22	   v<sub>a</sub> = v
+    23	   reply accept_ok(n)
+    24   else
+    25     reply reject
+    	</pre>
+

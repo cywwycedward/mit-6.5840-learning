@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>速查：学习工作区 Git 工作流</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Reference · Git</p>
+    <h1>学习工作区 Git：最小速查表</h1>
+    <p class="lede">目标不是积累复杂流程，而是让每个学习里程碑可说明、可验证、可恢复。</p>
+
+    <h2>只记住这条主线</h2>
+    <div class="diagram">main（稳定、可复习）
+  └─► topic branch（一个目标）
+        └─► 验证 + 原子提交
+              └─► 自审 + fast-forward 合并回 main</div>
+
+    <h2>跟踪判断</h2>
+    <ul>
+      <li><strong>提交：</strong>课程、学习记录、参考资料、代码、测试、`go.mod`/`go.sum`、`.scratch/` 问题记录和项目共享配置。</li>
+      <li><strong>忽略：</strong>二进制、覆盖率、日志、临时文件、本机 IDE 状态和任何密钥。</li>
+      <li><strong>先确认：</strong>第三方资料的许可、agent 配置是否共享、以及任何可能包含凭据的文件。</li>
+    </ul>
+
+    <h2>分支与提交</h2>
+    <pre><code>lesson/&lt;topic&gt;     exercise/&lt;topic&gt;     docs/&lt;topic&gt;
+ref/&lt;topic&gt;        fix/&lt;topic&gt;          chore/&lt;topic&gt;
+
+&lt;type&gt;(&lt;scope&gt;): &lt;简短的动作说明&gt;
+feat(counter): 支持并发读取
+docs(workflow): 定义 Git 管理规范</code></pre>
+    <p>一个提交一个理由。实现与证明它正确的测试可以同行；无关格式化、资料搬运和功能调整必须拆开。</p>
+
+    <h2>提交前四问</h2>
+    <ol>
+      <li>暂存区是否只有这一目标的文件？</li>
+      <li>diff 是否没有密钥、构建产物、无关改动或实验解答？</li>
+      <li>文档链接、测试及 race 检测是否已按改动类型运行？</li>
+      <li>提交标题是否能说明“为什么存在这次变化”？</li>
+    </ol>
+
+    <div class="callout warning">
+      <p><strong>保护边界。</strong><code>main</code> 不 force-push；共享提交不改写历史。遇到不认识的改动先检查，不用 <code>reset --hard</code> 或 <code>clean -fd</code> 清掉它。</p>
+    </div>
+
+    <p class="footnotes">完整规范：<a href="../docs/git-workflow.md">Git 管理规范</a>。操作练习：<a href="../lessons/0002-git-learning-workspace.html">第 02 节 Git 工作流课</a>。权威资料：<a href="https://git-scm.com/book/zh/v2">Pro Git（官方）</a>、<a href="https://git-scm.com/docs/gitignore">gitignore 文档</a>。</p>
+  </main>
+</body>
+</html>

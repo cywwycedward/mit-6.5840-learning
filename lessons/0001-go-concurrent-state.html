@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第一节：让 Go 服务状态在并发请求下保持正确</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">MIT 6.5840 路线 · 第 01 节</p>
+    <h1>让 Go 服务状态在并发请求下保持正确</h1>
+    <p class="lede">你将把“多个用户同时请求后端”这一熟悉场景，转换为 Go 的 goroutine、共享状态和数据竞争模型。完成后，你能写出并验证一个并发安全的计数器。</p>
+
+    <section class="meta" aria-label="课程信息">
+      <div><span class="label">单一技能</span>保护共享状态</div>
+      <div><span class="label">完成标准</span>解释并修复一处 race</div>
+      <div><span class="label">进入课程的意义</span>Lab 1 coordinator</div>
+    </section>
+
+    <div class="callout">
+      <p><strong>与后端的连接。</strong>HTTP/RPC server 通常会并发处理请求。若所有请求都修改同一份内存状态（计数器、map、任务表），正确性不再来自“代码按顺序执行”，而来自明确的同步规则。MIT 的 MapReduce Lab 1 也明确提醒：coordinator 的 RPC server 是并发的，必须保护共享状态。</p>
+    </div>
+
+    <h2>先预测，不查答案</h2>
+    <p>下面的 <code>hits++</code> 看起来像一个动作，但它会读取旧值、计算新值、写回新值。两个 goroutine 同时执行它时，可能都读取到相同旧值，导致一次更新被覆盖。</p>
+    <pre><code>type Counter struct {
+	hits int
+}
+
+func (c *Counter) Add() {
+	c.hits++ // 多个 goroutine 同时调用 Add 时有问题
+}</code></pre>
+
+    <section class="quiz" data-quiz>
+      <h3>检查 1</h3>
+      <p>两个 goroutine 同时调用 <code>Add</code>，它们都写 <code>hits</code>，且没有同步。这是 data race 吗？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：并发访问同一变量，且至少一个访问是写，又没有同步，就是 data race。" data-wrong="再想一次：此处两个 goroutine 都在写同一变量，且没有同步。" aria-pressed="false">是</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：此处两个 goroutine 都在写同一变量，且没有同步。" aria-pressed="false">否</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>建立一个可说清楚的规则</h2>
+    <p>这节课使用最直接的规则：<strong><code>Counter.mu</code> 拥有并保护 <code>Counter.hits</code>。</strong>每次读取或修改 <code>hits</code> 前先获取同一把锁；结束后释放它。</p>
+    <div class="diagram">请求 A ─┐
+         ├─► Lock ─► 修改 hits ─► Unlock
+请求 B ─┘       ▲
+                └── B 必须等待；因此不会与 A 同时读写 hits</div>
+    <pre><code>package counter
+
+import "sync"
+
+type Counter struct {
+	mu   sync.Mutex
+	hits int
+}
+
+func (c *Counter) Add() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.hits++
+}
+
+func (c *Counter) Value() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.hits
+}</code></pre>
+    <p><code>defer c.mu.Unlock()</code> 的意思是：无论函数在哪个返回点结束，离开函数前都执行 <code>Unlock</code>。这里它降低了以后修改函数时忘记解锁的风险。</p>
+
+    <section class="quiz" data-quiz>
+      <h3>检查 2</h3>
+      <p>既然 <code>Add</code> 已加锁，为什么 <code>Value</code> 也必须使用同一把锁？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：读操作可能与另一个 goroutine 的写操作并发发生。" aria-pressed="false">A</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：读与写并发也会构成 data race；同一把锁让读写形成统一规则。" data-wrong="再想一次：读操作可能与另一个 goroutine 的写操作并发发生。" aria-pressed="false">B</button>
+      </div>
+      <p><small>A：因为读操作会自动串行。　B：因为读操作可能与写操作同时发生。</small></p>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>亲手验证：让测试制造并发</h2>
+    <div class="callout">
+      <h3>命令卡：创建练习项目</h3>
+      <p><code>go mod init &lt;模块路径&gt;</code> 的作用是：在<strong>当前目录</strong>创建 <code>go.mod</code>，把该目录声明为一个 Go module（Go 用它记录项目身份和依赖）。只需在每个新项目的根目录执行一次。</p>
+      <p>在你新建的空目录 <code>safe-counter/</code> 中运行 <code>go mod init example.com/safe-counter</code>。这里 <code>example.com/safe-counter</code> 是这个练习的模块路径；它不需要是真实网站。成功后应看到 <code>go: creating new go.mod</code>，并在当前目录得到 <code>go.mod</code> 文件。</p>
+    </div>
+    <p>接着创建 <code>counter.go</code>（上一节的 <code>Counter</code> 实现）和下面的 <code>counter_test.go</code>。两个文件必须位于同一目录，且都使用 <code>package counter</code>。</p>
+    <pre><code>// counter_test.go
+package counter
+
+import (
+	"sync"
+	"testing"
+)
+
+func TestCounterConcurrentAdd(t *testing.T) {
+	const workers = 100
+	const addsPerWorker = 100
+
+	var c Counter
+	var wg sync.WaitGroup
+	wg.Add(workers)
+
+	for range workers {
+		go func() {
+			defer wg.Done()
+			for range addsPerWorker {
+				c.Add()
+			}
+		}()
+	}
+	wg.Wait()
+
+	if got, want := c.Value(), workers*addsPerWorker; got != want {
+		t.Fatalf("hits = %d, want %d", got, want)
+	}
+}</code></pre>
+    <div class="callout">
+      <h3>命令卡：运行带竞争检测的测试</h3>
+      <p><code>go test</code> 会编译并运行当前 module 中所有以 <code>_test.go</code> 结尾的测试。<code>-race</code> 会额外启用 Go 的 data race detector；<code>./...</code> 表示当前目录及所有子目录的 package。请仍在含有 <code>go.mod</code> 的 <code>safe-counter/</code> 根目录运行。</p>
+      <p>完整命令是 <code>go test -race ./...</code>。修复后，预期看到 <code>ok</code>；未加锁时，预期看到 <code>WARNING: DATA RACE</code>。这是诊断证据，不是“偶尔失败就重跑”的提示。</p>
+    </div>
+    <div class="practice">
+      <h3>你的任务</h3>
+      <ol>
+        <li>先把 <code>Counter</code> 中的 <code>mu</code>、两个 <code>Lock</code> 和两个 <code>Unlock</code> 暂时删掉。</li>
+        <li>运行 <code>go test -race ./...</code>，阅读报告中两个冲突访问的位置。</li>
+        <li>恢复 Mutex 版本，再次运行同一命令。</li>
+        <li>不用看代码，回答：“谁拥有 <code>hits</code>？为什么 <code>Value</code> 也必须加锁？”</li>
+      </ol>
+    </div>
+
+    <section class="quiz" data-quiz>
+      <h3>检查 3</h3>
+      <p><code>go test -race</code> 通过后，能否证明程序所有路径都没有 data race？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：race detector 只能观察测试实际运行到的路径。" aria-pressed="false">能</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：它是强大的动态检查工具，但只能发现已执行路径中的竞争。" data-wrong="再想一次：race detector 只能观察测试实际运行到的路径。" aria-pressed="false">否</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <details>
+      <summary>为何这比“先学 Raft”更重要？</summary>
+      <p>Raft 的一个 peer 同时处理选举计时器、RPC 回复、日志复制和客户端提交；其中的共享状态比 <code>hits</code> 多得多。若现在无法明确“哪个锁保护哪项状态”，Raft 中的错误会难以定位。先把这个小规则练到能解释，才有能力处理后面的复杂状态机。</p>
+    </details>
+
+    <section class="checklist">
+      <h2>完成检查</h2>
+      <ul>
+        <li>我能用一句话定义 data race。</li>
+        <li>我能指出 <code>Counter.mu</code> 保护的是 <code>Counter.hits</code>。</li>
+        <li>我运行过 <code>go test -race ./...</code>，并知道它只覆盖已执行的路径。</li>
+        <li>我能解释为什么读操作也需要遵守同一把锁。</li>
+      </ul>
+    </section>
+
+    <section class="next-step">
+      <h2>下一步</h2>
+      <p>完成后把下面两件事发给我：1）三道检查题的答案；2）你对“为什么读也要加锁”的一句解释。我们将据此决定下一节是补齐 goroutine/channel 的控制流，还是进入并发任务状态表——后者是 MapReduce coordinator 的直接前置。</p>
+    </section>
+
+    <p class="footnotes">主要资料：<a href="https://go.dev/doc/articles/race_detector">Go Data Race Detector</a>、<a href="https://pkg.go.dev/sync">sync 包文档</a>、<a href="https://go.dev/doc/tutorial/getting-started">Go 官方入门教程</a>。课程对应材料：<a href="../reference/mit-6.5840-official-research.md">MIT 6.5840 官方调研</a>、<a href="../reference/go-concurrency-safe-state.html">并发安全状态速查表</a>。不清楚任何一步时，请直接向我追问。</p>
+  </main>
+</body>
+</html>

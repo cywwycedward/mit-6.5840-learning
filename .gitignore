@@ -1,0 +1,30 @@
+# Operating-system and editor-local files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Go build and test outputs
+bin/
+*.exe
+*.test
+*.prof
+coverage.out
+coverage/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Disposable working files
+.tmp/
+tmp/
+*.tmp
+*.log
