@@ -15,7 +15,7 @@ func (c *Counter) Add(){
 	c.hits++
 }
 
-func (c *Counter) Value(){
+func (c *Counter) Value() int {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.hits
