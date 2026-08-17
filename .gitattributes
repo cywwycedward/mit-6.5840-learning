@@ -1,10 +1,25 @@
-# Keep source, lessons, and reference text consistent between Windows and WSL2.
+# Store and check out project text with LF, regardless of the developer's
+# core.autocrlf setting. This prevents Windows and Ubuntu from creating
+# line-ending-only diffs.
 * text=auto eol=lf
+
+# Lock the project's source, configuration, documentation, and Unix scripts
+# to LF even if Git's automatic text detection changes.
+*.go     text eol=lf
+go.mod   text eol=lf
+go.sum   text eol=lf
+*.sh     text eol=lf
+*.md     text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.html   text eol=lf
+*.css    text eol=lf
+*.js     text eol=lf
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 
-# Course source material must never be treated as text.
+# Binary course material must never be line-ending converted.
 *.pdf binary
 *.tar.gz binary
 
