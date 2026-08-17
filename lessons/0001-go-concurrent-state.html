@@ -11,44 +11,64 @@
   <main>
     <p class="eyebrow">MIT 6.5840 路线 · 第 01 节</p>
     <h1>让 Go 服务状态在并发请求下保持正确</h1>
-    <p class="lede">你将把“多个用户同时请求后端”这一熟悉场景，转换为 Go 的 goroutine、共享状态和数据竞争模型。完成后，你能写出并验证一个并发安全的计数器。</p>
+    <p class="lede">这一节以一个并发计数器为主线：先补齐它首次用到的 Go 语法、测试命令、循环和 WaitGroup，再亲手写出并验证一个不会丢失更新的后端状态。</p>
 
     <section class="meta" aria-label="课程信息">
-      <div><span class="label">单一技能</span>保护共享状态</div>
+      <div><span class="label">单一技能</span>保护并验证共享状态</div>
       <div><span class="label">完成标准</span>解释并修复一处 race</div>
       <div><span class="label">进入课程的意义</span>Lab 1 coordinator</div>
     </section>
 
     <div class="callout">
-      <p><strong>与后端的连接。</strong>HTTP/RPC server 通常会并发处理请求。若所有请求都修改同一份内存状态（计数器、map、任务表），正确性不再来自“代码按顺序执行”，而来自明确的同步规则。MIT 的 MapReduce Lab 1 也明确提醒：coordinator 的 RPC server 是并发的，必须保护共享状态。</p>
+      <p><strong>本课程的结构。</strong>循环、<code>range</code>、测试和 <code>sync.WaitGroup</code> 都是理解本例所需的前置知识，因此它们属于这一节的首次讲解，而不是独立课程。后续课程再次使用它们时，会链接到本页或速查表，不会把相同内容再讲一遍。</p>
     </div>
 
-    <h2>先预测，不查答案</h2>
-    <p>下面的 <code>hits++</code> 看起来像一个动作，但它会读取旧值、计算新值、写回新值。两个 goroutine 同时执行它时，可能都读取到相同旧值，导致一次更新被覆盖。</p>
-    <pre><code>type Counter struct {
+    <h2>0. 先建立问题：一次 <code>hits++</code> 不是原子的</h2>
+    <p>HTTP 或 RPC server 会并发处理请求。若多个请求修改同一份内存状态，例如计数器、map 或任务表，正确性不再来自“代码按顺序执行”，而来自明确的同步规则。</p>
+    <p><code>hits++</code> 是把整型变量加一的语句，不能作为另一个表达式的一部分；它看起来像一个动作，实际至少包含：读取旧值、计算新值、写回新值。两个 goroutine 交错执行时，可能都读取同一个旧值，令其中一次更新被覆盖。这种未同步的并发访问称为 <strong>data race（数据竞争）</strong>：多个 goroutine 并发访问同一内存位置，至少一个是写，且没有同步。</p>
+
+    <h2 id="go-type-method">1. 读懂第一个 Go 类型和方法</h2>
+    <div class="callout">
+      <h3>语法卡：<code>package</code>、<code>import</code> 与选择器</h3>
+      <p>每个 Go 源文件第一条非注释声明通常是 <code>package counter</code>。<code>package</code> 表示本文件属于名为 <code>counter</code> 的 package；同一目录中准备一起编译的普通 Go 文件应使用同一个 package 名。</p>
+      <p><code>import "sync"</code> 把标准库的 <code>sync</code> package 引入当前文件。导入后写 <code>sync.Mutex</code>：点号左边是 package 名，右边是其中导出的名称。这种“名称空间.名称”的写法叫 selector（选择器）。</p>
+    </div>
+    <div class="callout">
+      <h3>语法卡：结构体、字段、方法与指针接收者</h3>
+      <p><code>type Counter struct { hits int }</code> 声明一个新类型：<code>Counter</code> 是类型名，<code>struct</code> 表示它由字段组成，花括号内的 <code>hits int</code> 表示字段名在前、类型名在后。</p>
+      <p><code>func (c *Counter) Add()</code> 声明方法。<code>func</code> 开始函数声明；<code>(c *Counter)</code> 位于方法名 <code>Add</code> <strong>之前</strong>，叫 receiver（接收者），让我们能写 <code>c.Add()</code>。其中 <code>c</code> 是方法体内的变量名，<code>*Counter</code> 是“指向 Counter 的指针”，所以方法能修改调用者原来的那一份状态，而不是副本。</p>
+      <p>这与普通参数的位置不同：普通函数写成 <code>func add(x int, y int) int</code>。函数名后的小括号装参数；每个参数都是“名字在前、类型在后”；末尾的 <code>int</code> 是返回值类型。没有返回值时，末尾类型省略。</p>
+    </div>
+    <pre><code>package counter
+
+type Counter struct {
 	hits int
 }
 
 func (c *Counter) Add() {
-	c.hits++ // 多个 goroutine 同时调用 Add 时有问题
+	c.hits++ // 这里暂时还不安全
 }</code></pre>
 
     <section class="quiz" data-quiz>
       <h3>检查 1</h3>
-      <p>两个 goroutine 同时调用 <code>Add</code>，它们都写 <code>hits</code>，且没有同步。这是 data race 吗？</p>
+      <p>两个 goroutine 同时调用上面的 <code>Add</code>，都写 <code>hits</code>，且没有同步。这是 data race 吗？</p>
       <div class="answers">
-        <button class="answer" type="button" data-correct="true" data-right="正确：并发访问同一变量，且至少一个访问是写，又没有同步，就是 data race。" data-wrong="再想一次：此处两个 goroutine 都在写同一变量，且没有同步。" aria-pressed="false">是</button>
-        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：此处两个 goroutine 都在写同一变量，且没有同步。" aria-pressed="false">否</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：它们并发访问同一变量，至少一个是写，而且没有同步。" data-wrong="再想一次：两个 goroutine 都在写同一字段，且没有同步。" aria-pressed="false">是</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：两个 goroutine 都在写同一字段，且没有同步。" aria-pressed="false">否</button>
       </div>
       <p class="feedback" aria-live="polite"></p>
     </section>
 
-    <h2>建立一个可说清楚的规则</h2>
-    <p>这节课使用最直接的规则：<strong><code>Counter.mu</code> 拥有并保护 <code>Counter.hits</code>。</strong>每次读取或修改 <code>hits</code> 前先获取同一把锁；结束后释放它。</p>
+    <h2 id="mutex-rule">2. 用 Mutex 给共享状态建立规则</h2>
+    <div class="callout">
+      <h3>API 卡：<code>sync.Mutex</code>、<code>Lock</code>、<code>Unlock</code> 与 <code>defer</code></h3>
+      <p><code>sync.Mutex</code> 是互斥锁。把它看作一扇门：<code>Lock()</code> 获取门锁；若已有别的 goroutine 持有锁，当前 goroutine 会等待。<code>Unlock()</code> 释放锁，让等待者之一能够继续。锁不是数据本身；它是一个约定：<strong><code>Counter.mu</code> 保护 <code>Counter.hits</code></strong>，因此每次读或写 <code>hits</code> 都必须先获取同一把锁。</p>
+      <p><code>defer c.mu.Unlock()</code> 的语法是关键字 <code>defer</code> 加一个函数调用。它不会立刻调用 <code>Unlock</code>，而是登记为“当前函数返回前执行”。<code>return expression</code> 结束当前函数并把 expression 交给调用者；在真正返回前，本函数已登记的 defer 会执行。因此即使函数后来增加了多个 return，也较不容易漏掉解锁。<code>defer</code> 只影响当前 goroutine 的当前函数调用。</p>
+    </div>
     <div class="diagram">请求 A ─┐
          ├─► Lock ─► 修改 hits ─► Unlock
 请求 B ─┘       ▲
-                └── B 必须等待；因此不会与 A 同时读写 hits</div>
+                └── B 必须等待；不会与 A 同时读写 hits</div>
     <pre><code>package counter
 
 import "sync"
@@ -69,26 +89,138 @@ func (c *Counter) Value() int {
 	defer c.mu.Unlock()
 	return c.hits
 }</code></pre>
-    <p><code>defer c.mu.Unlock()</code> 的意思是：无论函数在哪个返回点结束，离开函数前都执行 <code>Unlock</code>。这里它降低了以后修改函数时忘记解锁的风险。</p>
+    <p><code>return c.hits</code> 结束 <code>Value</code> 并把 <code>hits</code> 的值交给调用者；执行返回前，已经登记的 <code>defer c.mu.Unlock()</code> 会先运行。读操作也要锁，因为“一个 goroutine 读、另一个 goroutine 写”同样是 data race。</p>
 
     <section class="quiz" data-quiz>
       <h3>检查 2</h3>
       <p>既然 <code>Add</code> 已加锁，为什么 <code>Value</code> 也必须使用同一把锁？</p>
       <div class="answers">
-        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：读操作可能与另一个 goroutine 的写操作并发发生。" aria-pressed="false">A</button>
-        <button class="answer" type="button" data-correct="true" data-right="正确：读与写并发也会构成 data race；同一把锁让读写形成统一规则。" data-wrong="再想一次：读操作可能与另一个 goroutine 的写操作并发发生。" aria-pressed="false">B</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：读取 hits 时，另一个 goroutine 可能正在写它。" aria-pressed="false">读会自动串行</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：读与写也可能并发；同一把锁让所有访问遵守一个规则。" data-wrong="再想一次：读取 hits 时，另一个 goroutine 可能正在写它。" aria-pressed="false">读也会与写冲突</button>
       </div>
-      <p><small>A：因为读操作会自动串行。　B：因为读操作可能与写操作同时发生。</small></p>
       <p class="feedback" aria-live="polite"></p>
     </section>
 
-    <h2>亲手验证：让测试制造并发</h2>
+    <h2 id="go-for-range">3. 完整理解循环与 <code>range</code></h2>
+    <p>Go 没有独立的 <code>while</code> 或 <code>do...while</code>；所有重复执行都由 <code>for</code> 表达。<code>range</code> 不是独立语句，而是 <code>for</code> 的一种子句。读 <code>for x := range y</code> 时，固定问四件事：<em>y 的类型是什么？每轮得到什么？顺序保证吗？何时停止？</em></p>
+
+    <h3>3.1 四种常用 <code>for</code> 形式</h3>
+    <table>
+      <thead><tr><th>形式</th><th>语法中每一部分的意思</th><th>行为</th></tr></thead>
+      <tbody>
+        <tr><td><code>for condition { ... }</code></td><td><code>condition</code> 是布尔表达式。</td><td>每轮开始前求值；为真才运行循环体。相当于许多语言的 while。</td></tr>
+        <tr><td><code>for init; condition; post { ... }</code></td><td><code>init</code> 只执行一次；三段由分号隔开；<code>post</code> 在每轮末尾执行。</td><td>常用于带计数器的循环。</td></tr>
+        <tr><td><code>for range x { ... }</code></td><td><code>x</code> 是被遍历的 range expression。</td><td>不需要迭代值时使用；本节的 worker 循环属于此类。</td></tr>
+        <tr><td><code>for { ... }</code></td><td>没有条件。</td><td>无限循环；必须在内部有 <code>break</code>、<code>return</code>、阻塞或其他可说明的退出路径。</td></tr>
+      </tbody>
+    </table>
+    <p><code>:=</code> 是短变量声明：在当前作用域创建至少一个新变量，并从右侧推导类型；<code>retries := 0</code> 创建类型为 <code>int</code> 的变量。<code>i++</code> 将 <code>i</code> 加一；循环体的花括号形成一个块作用域。</p>
+    <pre><code>retries := 0
+for retries &lt; 3 {
+	retries++
+}
+
+for i := 0; i &lt; 3; i++ {
+	// i 依次为 0、1、2
+}</code></pre>
+    <p><code>i++</code> 是语句，不能嵌在别的表达式里。条件为假时循环体一次也不执行；三段式循环的 <code>init</code> 只运行一次，而 <code>post</code> 在每轮末尾运行。</p>
+
+    <h3>3.2 <code>range</code> 左侧：声明、赋值与丢弃值</h3>
+    <pre><code>for range x { }          // 不需要迭代值
+for v := range x { }     // 声明一个迭代变量
+for a, b := range x { }  // 声明两个迭代变量
+for a, b = range x { }   // 给已经存在的变量赋值
+for _, v := range x { }  // 丢弃第一个值</code></pre>
+    <p><code>:=</code> 声明变量，<code>=</code> 只赋值、不会新建变量。<code>_</code> 是空标识符，表示“这个值刻意不使用”。右侧表达式会在开始遍历前求值一次。channel 和整数至多提供一个值；array、slice、string、map 通常可提供两个值。</p>
+
+    <h3>3.3 不同右侧类型的精确行为</h3>
+    <table>
+      <thead><tr><th>右侧类型</th><th>可得到的值</th><th>顺序与停止</th><th>必须记住</th></tr></thead>
+      <tbody>
+        <tr><td>array / slice</td><td>第一个是索引；第二个是元素值的副本。</td><td>索引从 0 递增到 <code>len(x)-1</code>；nil slice 为零轮。</td><td>要改原 slice 用索引：<code>for i := range xs { xs[i]++ }</code>。<code>for _, v := range xs { v++ }</code> 只改副本。</td></tr>
+        <tr><td>string</td><td>第一个是 UTF-8 byte 偏移；第二个是 Unicode code point（<code>rune</code>）。</td><td>从左到右解码；无效 UTF-8 产生 <code>U+FFFD</code> 并前进一个 byte。</td><td>字符串不是按“一个字符一个 byte”遍历。</td></tr>
+        <tr><td>map</td><td>第一个是 key；第二个是 value 副本。</td><td>遍历顺序未指定，不能依赖两次相同。</td><td>不同 goroutine 未同步读写同一 map 仍是 data race；range 不能替代 Mutex。</td></tr>
+        <tr><td>channel</td><td>每轮收到一个元素。</td><td>没有值时等待；关闭且已接收完缓冲值后停止；nil channel 永远阻塞。</td><td><code>for task := range tasks</code> 的结束信号是关闭 channel，不是特殊任务值。</td></tr>
+        <tr><td>整数（Go 1.22+）</td><td>一个索引值：<code>0</code> 到 <code>n-1</code>。</td><td><code>n &lt;= 0</code> 时零轮。</td><td><code>for range workers</code> 只重复 <code>workers</code> 次；<code>for i := range workers</code> 同时取得索引。</td></tr>
+      </tbody>
+    </table>
+    <p>本课程的代码使用最后一行的整数 <code>range</code>。MIT 6.5840 的最低 Go 版本是 1.22，因此它可用。Go 1.22+ 中，用 <code>:=</code> 声明的循环变量每一轮是独立变量；这减少了闭包捕获旧循环变量的错误，但绝不让共享 map、slice 或 struct 自动变得并发安全。</p>
+    <p><code>map[string]int{...}</code> 是 map 字面量：<code>string</code> 是 key 类型，<code>int</code> 是 value 类型；花括号列出初始 key/value。<code>for task := range tasks</code> 的 <code>tasks</code> 必须是 channel，<code>handle(task)</code> 是一次普通函数调用。这两种形式在后续课程会用于任务表和 worker。</p>
+    <pre><code>status := map[string]int{"pending": 2, "done": 5}
+for key, value := range status {
+	// 不要假设 pending 一定先于 done
+}
+
+for task := range tasks {
+	handle(task) // 发送方关闭 tasks 后，循环自然结束
+}</code></pre>
+
+    <h3>3.4 <code>break</code>、<code>continue</code> 与标签</h3>
+    <p><code>break</code> 立即退出最近一层 <code>for</code>；<code>continue</code> 跳过本轮余下语句并开始下一轮。三段式循环中的 <code>continue</code> 仍会执行轮尾的 <code>post</code>。<code>if condition { ... }</code> 先判断布尔条件，真时执行块。需要影响外层嵌套循环时，把标签紧贴在目标循环前：</p>
+    <pre><code>Outer:
+for _, batch := range batches {
+	for _, task := range batch {
+		if task.Cancelled {
+			continue Outer // 直接开始下一个 batch
+		}
+		if task.Fatal {
+			break Outer // 同时退出两个循环
+		}
+	}
+}</code></pre>
+    <p>没有标签的 <code>break</code> 和 <code>continue</code> 只影响最内层循环；业务代码优先通过拆分函数保持清晰，标签只在它最直接时使用。</p>
+
+    <section class="quiz" data-quiz>
+      <h3>检查 3</h3>
+      <p>执行 <code>for _, n := range nums { n++ }</code> 后，<code>nums</code> 中的整数会全部加一吗？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：n 是元素副本；它不会写回 nums。" aria-pressed="false">会</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：n 是副本；要修改原 slice 应用索引访问 nums[i]。" data-wrong="再想一次：n 是元素副本；它不会写回 nums。" aria-pressed="false">否</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2 id="go-setup-testing">4. 写测试前，认识 <code>testing</code>、goroutine 与 WaitGroup</h2>
     <div class="callout">
-      <h3>命令卡：创建练习项目</h3>
-      <p><code>go mod init &lt;模块路径&gt;</code> 的作用是：在<strong>当前目录</strong>创建 <code>go.mod</code>，把该目录声明为一个 Go module（Go 用它记录项目身份和依赖）。只需在每个新项目的根目录执行一次。</p>
-      <p>在你新建的空目录 <code>safe-counter/</code> 中运行 <code>go mod init example.com/safe-counter</code>。这里 <code>example.com/safe-counter</code> 是这个练习的模块路径；它不需要是真实网站。成功后应看到 <code>go: creating new go.mod</code>，并在当前目录得到 <code>go.mod</code> 文件。</p>
+      <h3>命令卡：<code>go mod init &lt;模块路径&gt;</code></h3>
+      <p><strong>作用：</strong>在当前目录创建 <code>go.mod</code>，把该目录声明为一个 Go module；Go 用它记录项目身份和依赖。<strong>在哪里运行：</strong>新建练习项目的根目录，例如 <code>safe-counter/</code>，每个项目只需一次。<strong>参数：</strong><code>go</code> 是工具；<code>mod</code> 是模块子命令；<code>init</code> 是初始化动作；<code>example.com/safe-counter</code> 是模块路径，不需要是真实网站。</p>
+      <p>执行 <code>go mod init example.com/safe-counter</code> 后，预期出现创建 <code>go.mod</code> 的提示。确认方式是查看当前目录中是否已有该文件；不要在上级课程目录反复运行它，否则会把多个练习混成一个 module。</p>
     </div>
-    <p>接着创建 <code>counter.go</code>（上一节的 <code>Counter</code> 实现）和下面的 <code>counter_test.go</code>。两个文件必须位于同一目录，且都使用 <code>package counter</code>。</p>
+    <div class="callout">
+      <h3>语法卡：测试文件、<code>testing.T</code> 与失败报告</h3>
+      <p><code>testing</code> 是 Go 标准库。<code>go test</code> 自动查找文件名以 <code>_test.go</code> 结尾、函数形如 <code>func TestXxx(t *testing.T)</code> 的测试；你既不手动调用测试函数，也不自己创建 <code>t</code>。</p>
+      <p><code>t</code> 是变量名，<code>*testing.T</code> 是类型；它是测试运行器交给测试函数的报告工具。<code>t.Fatalf(format, values...)</code> 记录失败并立刻结束<strong>当前测试函数</strong>。其中 <code>%d</code> 是格式占位符，会由之后的整数替换。</p>
+    </div>
+    <div class="callout">
+      <h3>语法卡：常量、零值、匿名函数与 <code>go</code></h3>
+      <p><code>const workers = 100</code> 声明不能重新赋值的常量。<code>var c Counter</code> 声明一个明确类型的变量；未显式赋值时，字段取类型的零值，<code>int</code> 的零值为 0。<code>var wg sync.WaitGroup</code> 也能直接使用，因为 WaitGroup 的零值代表“没有尚未完成的任务”。</p>
+      <p><code>func() { ... }</code> 是没有名称、没有参数的匿名函数；末尾的 <code>()</code> 是立即调用它。最前面的 <code>go</code> 把这次函数调用放入新的 goroutine 并发执行：<code>go func() { ... }()</code>。若漏掉最后的 <code>()</code>，只是定义了函数值，既没有调用，也没有启动 goroutine。</p>
+    </div>
+
+    <h2 id="waitgroup">5. WaitGroup：等待任务结束，不保护数据</h2>
+    <p><code>sync.WaitGroup</code> 是“未完成任务”的计数器，而不是 Mutex 的替代品。它回答“所有 worker 都结束了吗？”；<code>Counter.mu</code> 回答“现在能否安全读写 hits？”</p>
+    <div class="diagram">初始：0
+Add(3)  ─► 3   登记三个任务
+Done()  ─► 2   第一个任务结束
+Done()  ─► 1   第二个任务结束
+Done()  ─► 0   第三个任务结束；Wait 解除阻塞</div>
+    <table>
+      <thead><tr><th>方法</th><th>用途</th><th>本例中的时机</th></tr></thead>
+      <tbody>
+        <tr><td><code>wg.Add(n)</code></td><td>计数增加 <code>n</code>。</td><td>在启动 n 个 goroutine 前登记任务。</td></tr>
+        <tr><td><code>wg.Done()</code></td><td>计数减一，等价于 <code>wg.Add(-1)</code>。</td><td>每个 worker 返回时执行一次。</td></tr>
+        <tr><td><code>wg.Wait()</code></td><td>当前 goroutine 阻塞，直到计数为零。</td><td>启动 worker 后、读取最终结果前。</td></tr>
+      </tbody>
+    </table>
+    <p>必须遵守三条规则：第一，正数 <code>Add</code> 要在启动 goroutine 前完成，否则 <code>Wait</code> 可能先看到 0 并提前返回；第二，每个 <code>Add(1)</code> 必须恰好有一次 <code>Done()</code>，少一次会永久等待，多一次会因负计数而 panic；第三，首次使用后不能复制 WaitGroup，传入函数时使用 <code>*sync.WaitGroup</code>。</p>
+    <p>Go 1.25 添加了 <code>wg.Go(f)</code>，能启动函数并自动配平计数；但 MIT 6.5840 最低要求是 Go 1.22，因此本课程使用兼容的 <code>Add</code> 加 <code>defer Done</code> 模式。传给 <code>wg.Go</code> 的函数不能 panic。</p>
+
+    <h2 id="test-composition">6. 把这些规则组合成并发测试</h2>
+    <div class="callout">
+      <h3>语法卡：带初始化语句的 <code>if</code></h3>
+      <p><code>if got, want := actual, expected; got != want { ... }</code> 有两部分：分号前的 <code>got, want := actual, expected</code> 创建实际值和期望值，它们的作用域只覆盖这个 if；分号后的 <code>got != want</code> 是条件。<code>!=</code> 表示“不相等”，<code>*</code> 是整数乘法。这样写能让失败消息同时使用 got 和 want，又不把它们暴露到后续代码。</p>
+    </div>
+    <p>创建 <code>counter.go</code>（上文第 2 部分的 Counter 实现）和下方的 <code>counter_test.go</code>，两个文件位于同一目录并声明 <code>package counter</code>。</p>
     <pre><code>// counter_test.go
 package counter
 
@@ -119,52 +251,56 @@ func TestCounterConcurrentAdd(t *testing.T) {
 		t.Fatalf("hits = %d, want %d", got, want)
 	}
 }</code></pre>
+    <details>
+      <summary>逐行说明这段测试的关键控制流</summary>
+      <p><code>wg.Add(workers)</code> 在主 goroutine 中先登记全部 worker。外层 <code>for range workers</code> 启动 100 个 goroutine；每个匿名函数一进入就登记 <code>defer wg.Done()</code>，内层整数 range 各做 100 次 <code>c.Add()</code>。</p>
+      <p>主 goroutine 继续到 <code>wg.Wait()</code> 并等待。所有 worker 都调用 Done 后，Wait 才返回，所以随后读取 <code>c.Value()</code> 时，加法已结束。最后的 if 用前面语法卡所说的局部 <code>got</code> / <code>want</code> 比较实际计数和期望计数；不相等时，<code>Fatalf</code> 立即令该测试失败。</p>
+    </details>
+
     <div class="callout">
-      <h3>命令卡：运行带竞争检测的测试</h3>
-      <p><code>go test</code> 会编译并运行当前 module 中所有以 <code>_test.go</code> 结尾的测试。<code>-race</code> 会额外启用 Go 的 data race detector；<code>./...</code> 表示当前目录及所有子目录的 package。请仍在含有 <code>go.mod</code> 的 <code>safe-counter/</code> 根目录运行。</p>
-      <p>完整命令是 <code>go test -race ./...</code>。修复后，预期看到 <code>ok</code>；未加锁时，预期看到 <code>WARNING: DATA RACE</code>。这是诊断证据，不是“偶尔失败就重跑”的提示。</p>
-    </div>
-    <div class="practice">
-      <h3>你的任务</h3>
-      <ol>
-        <li>先把 <code>Counter</code> 中的 <code>mu</code>、两个 <code>Lock</code> 和两个 <code>Unlock</code> 暂时删掉。</li>
-        <li>运行 <code>go test -race ./...</code>，阅读报告中两个冲突访问的位置。</li>
-        <li>恢复 Mutex 版本，再次运行同一命令。</li>
-        <li>不用看代码，回答：“谁拥有 <code>hits</code>？为什么 <code>Value</code> 也必须加锁？”</li>
-      </ol>
+      <h3>命令卡：<code>go test -race ./...</code></h3>
+      <p><strong>作用：</strong><code>go test</code> 编译并运行测试；<code>-race</code> 额外启用 data race detector；<code>./...</code> 是 package 模式，表示当前目录与所有子目录中的 package。<strong>在哪里运行：</strong>仍在包含 <code>go.mod</code> 的 <code>safe-counter/</code> 根目录。<strong>成功结果：</strong>修复后会看到 <code>ok</code>；暂时删除 Mutex 后，预期可看到 <code>WARNING: DATA RACE</code>。</p>
+      <p><strong>验证边界：</strong>race detector 是动态工具，只能发现测试实际执行路径中的竞争；通过测试不等于证明程序所有路径都没有竞争。Windows 原生环境下，<code>-race</code> 需要 cgo 和可用的 C 编译器；MIT 课程在 Windows 推荐 WSL2。若再次遇到 cgo 报错，先停止，不要绕过 <code>-race</code>，把完整错误发给我一起确认环境。</p>
     </div>
 
+    <section class="practice">
+      <h2>你的练习：用证据证明规则有效</h2>
+      <ol>
+        <li>在独立练习目录运行 <code>go mod init example.com/safe-counter</code>，确认 <code>go.mod</code> 出现。</li>
+        <li>实现带 <code>Mutex</code> 的 <code>Counter</code>，复制测试代码。</li>
+        <li>暂时删除两个方法中的 Lock / Unlock，运行 <code>go test -race ./...</code>，记录报告的两处冲突访问。</li>
+        <li>恢复 Mutex，重跑相同命令，确认结果为 <code>ok</code>。</li>
+        <li>不用看代码，回答：“谁拥有 hits？WaitGroup 为什么不能保护 hits？为什么 Value 也需要同一把锁？”</li>
+      </ol>
+    </section>
+
     <section class="quiz" data-quiz>
-      <h3>检查 3</h3>
-      <p><code>go test -race</code> 通过后，能否证明程序所有路径都没有 data race？</p>
+      <h3>检查 4</h3>
+      <p>有三个 worker，执行 <code>Add(3)</code> 后两个 worker 已调用 <code>Done</code>。此时 <code>Wait</code> 会返回吗？</p>
       <div class="answers">
-        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：race detector 只能观察测试实际运行到的路径。" aria-pressed="false">能</button>
-        <button class="answer" type="button" data-correct="true" data-right="正确：它是强大的动态检查工具，但只能发现已执行路径中的竞争。" data-wrong="再想一次：race detector 只能观察测试实际运行到的路径。" aria-pressed="false">否</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：计数仍为 1；Wait 只在计数归零时返回。" aria-pressed="false">会</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：计数仍为 1，最后一个 worker 调用 Done 后才会归零。" data-wrong="再想一次：计数仍为 1；Wait 只在计数归零时返回。" aria-pressed="false">否</button>
       </div>
       <p class="feedback" aria-live="polite"></p>
     </section>
 
-    <details>
-      <summary>为何这比“先学 Raft”更重要？</summary>
-      <p>Raft 的一个 peer 同时处理选举计时器、RPC 回复、日志复制和客户端提交；其中的共享状态比 <code>hits</code> 多得多。若现在无法明确“哪个锁保护哪项状态”，Raft 中的错误会难以定位。先把这个小规则练到能解释，才有能力处理后面的复杂状态机。</p>
-    </details>
-
     <section class="checklist">
       <h2>完成检查</h2>
       <ul>
-        <li>我能用一句话定义 data race。</li>
-        <li>我能指出 <code>Counter.mu</code> 保护的是 <code>Counter.hits</code>。</li>
-        <li>我运行过 <code>go test -race ./...</code>，并知道它只覆盖已执行的路径。</li>
-        <li>我能解释为什么读操作也需要遵守同一把锁。</li>
+        <li>我能定义 data race，并指出 <code>Counter.mu</code> 保护 <code>Counter.hits</code>。</li>
+        <li>我能区分 WaitGroup 的“等待完成”和 Mutex 的“保护共享状态”。</li>
+        <li>我能解释 <code>for range workers</code> 在 Go 1.22+ 中为何重复 workers 次。</li>
+        <li>我知道 slice、map、string、channel 和整数作为 range 右侧时各自产生什么值。</li>
+        <li>我知道 <code>go test -race ./...</code> 的运行位置、组成和覆盖边界。</li>
       </ul>
     </section>
 
     <section class="next-step">
       <h2>下一步</h2>
-      <p>完成后把下面两件事发给我：1）三道检查题的答案；2）你对“为什么读也要加锁”的一句解释。我们将据此决定下一节是补齐 goroutine/channel 的控制流，还是进入并发任务状态表——后者是 MapReduce coordinator 的直接前置。</p>
+      <p>把四道检查题答案、一次 race 报告或成功的 <code>ok</code> 输出，以及“为什么读也要加锁”的一句解释发给我。确认这些基础后，下一节才会进入真正的新主题：goroutine 之间如何用 channel 传递工作和退出信号。</p>
     </section>
 
-    <p class="footnotes">主要资料：<a href="https://go.dev/doc/articles/race_detector">Go Data Race Detector</a>、<a href="https://pkg.go.dev/sync">sync 包文档</a>、<a href="https://go.dev/doc/tutorial/getting-started">Go 官方入门教程</a>。课程对应材料：<a href="../reference/mit-6.5840-official-research.md">MIT 6.5840 官方调研</a>、<a href="../reference/go-concurrency-safe-state.html">并发安全状态速查表</a>。不清楚任何一步时，请直接向我追问。</p>
+    <p class="footnotes">主要资料：<a href="https://go.dev/doc/articles/race_detector">Go Data Race Detector</a>、<a href="https://pkg.go.dev/testing">testing 包文档</a>、<a href="https://pkg.go.dev/sync#WaitGroup">sync.WaitGroup 文档</a>、<a href="https://go.dev/ref/spec#For_statements">Go 语言规范：for 与 range</a>、<a href="https://go.dev/doc/go1.22">Go 1.22 发布说明</a>。复习资料：<a href="../reference/go-tests-and-syntax-basics.html">Go 测试与基础语法</a>、<a href="../reference/go-concurrency-safe-state.html">并发安全状态</a>、<a href="../reference/go-loop-range-cheatsheet.html">for 与 range 速查表</a>、<a href="../reference/go-sync-waitgroup.html">WaitGroup 速查表</a>、<a href="../reference/go-syntax-command-index.html">语法与命令讲解索引</a>。不清楚任何一步时，请直接向我追问。</p>
   </main>
 </body>
 </html>

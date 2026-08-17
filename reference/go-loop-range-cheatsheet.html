@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>速查：Go for 与 range</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Reference · Go 控制流</p>
+    <h1>Go 的 <code>for</code> 与 <code>range</code> 速查</h1>
+    <p class="lede">Go 只有一个循环关键字：<code>for</code>。<code>range</code> 是它的一种子句，用来从集合、channel、整数或迭代器中依次取值。</p>
+
+    <h2><code>for</code> 的四种常用形式</h2>
+    <table>
+      <thead><tr><th>形式</th><th>含义</th><th>何时用</th></tr></thead>
+      <tbody>
+        <tr><td><code>for cond {}</code></td><td>每次先检查条件；为真才执行。</td><td>等待状态变化。</td></tr>
+        <tr><td><code>for init; cond; post {}</code></td><td>初始化一次；每轮检查；轮尾执行 post。</td><td>需要计数器或步长。</td></tr>
+        <tr><td><code>for range x {}</code></td><td>遍历 <code>x</code> 产生的项。</td><td>大多数集合、channel、整数循环。</td></tr>
+        <tr><td><code>for {}</code></td><td>无限循环，必须在内部退出或阻塞。</td><td>服务循环、worker；要有退出机制。</td></tr>
+      </tbody>
+    </table>
+
+    <h2><code>range</code> 左侧写法</h2>
+    <pre><code>for range x {}          // 不需要任何值
+for v := range x {}     // 声明一个迭代变量
+for k, v := range x {}  // 声明两个迭代变量（仅某些 x 支持）
+for k, v = range x {}   // 使用已经存在的变量
+for _, v := range x {}  // 丢弃第一个值；_ 是空标识符</code></pre>
+    <p><code>:=</code> 会声明新变量，它们的作用域是循环块；<code>=</code> 不声明变量，必须先有可赋值的 <code>k</code>、<code>v</code>。</p>
+
+    <h2>不同右侧类型产生什么值？</h2>
+    <table>
+      <thead><tr><th>右侧</th><th>第一个值</th><th>第二个值</th><th>重要规则</th></tr></thead>
+      <tbody>
+        <tr><td>array / slice</td><td>索引 <code>int</code></td><td>元素副本</td><td>索引递增；nil slice 零次。</td></tr>
+        <tr><td>string</td><td>字节索引</td><td>Unicode code point（<code>rune</code>）</td><td>不是按 byte 遍历字符；无效 UTF-8 得到 <code>U+FFFD</code>。</td></tr>
+        <tr><td>map</td><td>key</td><td>value 副本</td><td>顺序未指定；nil map 零次。</td></tr>
+        <tr><td>channel</td><td>收到的元素</td><td>无</td><td>一直收至关闭；nil channel 永久阻塞。</td></tr>
+        <tr><td>整数（Go 1.22+）</td><td><code>0...n-1</code></td><td>无</td><td><code>n &lt;= 0</code> 时零次。</td></tr>
+        <tr><td>迭代器函数（Go 1.23+）</td><td>yield 产生的值</td><td>可选</td><td>高级特性；当前课程暂不需要。</td></tr>
+      </tbody>
+    </table>
+
+    <h2>三个常见陷阱</h2>
+    <ol>
+      <li><strong>map 不保证顺序：</strong>不要依赖输出或处理顺序；需要排序时先收集 key 再排序。</li>
+      <li><strong>元素值通常是副本：</strong><code>for _, v := range slice { v++ }</code> 不会修改 slice；要写回使用索引 <code>slice[i]++</code>。</li>
+      <li><strong>range channel 等待 close：</strong>发送端不关闭 channel，接收端的循环不会自然结束。</li>
+    </ol>
+
+    <h2>流程控制</h2>
+    <pre><code>for i := range 10 {
+	if i == 3 {
+		continue // 跳过本轮其余部分，开始下一轮
+	}
+	if i == 7 {
+		break // 退出最近的 for
+	}
+}</code></pre>
+    <p>嵌套循环需要退出外层时使用 label：<code>break Outer</code> 或 <code>continue Outer</code>。label 必须贴在对应的 <code>for</code> 前。</p>
+
+    <p class="footnotes">权威资料：<a href="https://go.dev/ref/spec#For_statements">Go 语言规范：for 与 range</a>、<a href="https://go.dev/doc/go1.22">Go 1.22 发布说明</a>。完整讲解与练习：<a href="../lessons/0001-go-concurrent-state.html#go-for-range">第一节的循环与 range 区块</a>。</p>
+  </main>
+</body>
+</html>

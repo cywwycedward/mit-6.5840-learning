@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>索引：Go 语法与命令的首次讲解</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Reference · 课程索引</p>
+    <h1>Go 语法与命令的首次讲解索引</h1>
+    <p class="lede">新增课程或练习前先查这里：已讲解的项目只链接复习；未讲解的项目必须先在其首次出现的课程中完整说明，再登记到本表。本表记录“已经解释过”，不代表“已经掌握”。</p>
+
+    <table>
+      <thead><tr><th>分类</th><th>项目</th><th>首次完整说明</th><th>已说明的边界</th></tr></thead>
+      <tbody>
+        <tr><td>命令</td><td><code>go mod init &lt;模块路径&gt;</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-setup-testing">第一节，第 4 节</a></td><td>运行目录、子命令和参数、<code>go.mod</code> 结果与确认方式。</td></tr>
+        <tr><td>命令</td><td><code>go test -race ./...</code></td><td><a href="../lessons/0001-go-concurrent-state.html#test-composition">第一节，第 6 节</a></td><td><code>go test</code>、<code>-race</code>、package 模式、运行目录、结果和动态检测边界。</td></tr>
+        <tr><td>结构</td><td><code>package</code> / <code>import</code> / selector</td><td><a href="../lessons/0001-go-concurrent-state.html#go-type-method">第一节，第 1 节</a></td><td>package 归属、导入、<code>sync.Mutex</code> 的名称选择。</td></tr>
+        <tr><td>类型</td><td><code>struct</code>、字段、方法 receiver、指针</td><td><a href="../lessons/0001-go-concurrent-state.html#go-type-method">第一节，第 1 节</a></td><td>名字与类型的位置、<code>*Counter</code> 的共享状态含义、普通参数和返回值。</td></tr>
+        <tr><td>并发 API</td><td><code>sync.Mutex</code> / <code>Lock</code> / <code>Unlock</code></td><td><a href="../lessons/0001-go-concurrent-state.html#mutex-rule">第一节，第 2 节</a></td><td>锁保护的数据、不安全读写、与 goroutine 的互斥关系。</td></tr>
+        <tr><td>控制流</td><td><code>defer</code> / <code>return</code></td><td><a href="../lessons/0001-go-concurrent-state.html#mutex-rule">第一节，第 2 节</a></td><td>延迟调用的执行时机和当前 goroutine 的函数边界。</td></tr>
+        <tr><td>控制流</td><td><code>for</code>、<code>range</code>、<code>break</code>、<code>continue</code>、label</td><td><a href="../lessons/0001-go-concurrent-state.html#go-for-range">第一节，第 3 节</a></td><td>条件、三段式、无限循环；array/slice、string、map、channel、整数 range；Go 1.22 循环变量语义。</td></tr>
+        <tr><td>声明</td><td><code>var</code>、<code>const</code>、<code>:=</code>、<code>_</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-for-range">第一节，第 3、4 节</a></td><td>零值、常量、短变量声明作用域、空标识符。</td></tr>
+        <tr><td>并发语法</td><td>匿名函数与 <code>go func() { ... }()</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-setup-testing">第一节，第 4 节</a></td><td>函数定义、最后的调用括号、goroutine 的启动含义。</td></tr>
+        <tr><td>测试 API</td><td><code>testing</code>、<code>TestXxx</code>、<code>*testing.T</code>、<code>Fatalf</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-setup-testing">第一节，第 4 节</a></td><td>测试发现规则、<code>t</code> 来源、格式化失败和当前测试的控制流。</td></tr>
+        <tr><td>并发 API</td><td><code>sync.WaitGroup</code> / <code>Add</code> / <code>Done</code> / <code>Wait</code></td><td><a href="../lessons/0001-go-concurrent-state.html#waitgroup">第一节，第 5 节</a></td><td>计数模型、Add/Done 配平、先 Add 后启动、禁止复制、与 Mutex 的职责区别。</td></tr>
+        <tr><td>控制流</td><td>带初始化语句的 <code>if</code>、<code>!=</code></td><td><a href="../lessons/0001-go-concurrent-state.html#test-composition">第一节，第 6 节</a></td><td>初始化变量的作用域和实际值/期望值断言。</td></tr>
+      </tbody>
+    </table>
+
+    <section class="callout">
+      <h2>维护规则</h2>
+      <ol>
+        <li>新语法、关键字、标准库 API 或命令首次进入课程正文、练习代码或可执行代码块前，先在该课程添加完整解释，再在本表添加一行。</li>
+        <li>后续课程只写解决当前问题所需的简短提醒，并链接到本表和首次说明；出现新的边界或版本差异时，更新首次说明和本表的“已说明的边界”。</li>
+        <li>本表不取代检索练习。学习者仍需能解释、预测行为或完成练习，才能把知识记录为已掌握。</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

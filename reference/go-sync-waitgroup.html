@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>速查：sync.WaitGroup</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Reference · Go 并发</p>
+    <h1><code>sync.WaitGroup</code> 速查</h1>
+    <p class="lede">WaitGroup 是一个完成计数器：协调“何时全部做完”，不负责“谁能同时读写状态”。</p>
+
+    <h2>最常用模式</h2>
+    <pre><code>var wg sync.WaitGroup
+
+for range workers {
+	wg.Add(1) // 先登记一个即将开始的任务
+	go func() {
+		defer wg.Done() // 无论怎样返回，都在结束时注销任务
+		doWork()
+	}()
+}
+
+wg.Wait() // 计数归零前阻塞</code></pre>
+
+    <table>
+      <thead><tr><th>操作</th><th>计数器变化</th><th>规则</th></tr></thead>
+      <tbody>
+        <tr><td><code>wg.Add(n)</code></td><td>加 <code>n</code></td><td>任务开始前登记；计数不能变为负数。</td></tr>
+        <tr><td><code>wg.Done()</code></td><td>减 1</td><td>等价于 <code>wg.Add(-1)</code>；通常放在 goroutine 起始处的 <code>defer</code>。</td></tr>
+        <tr><td><code>wg.Wait()</code></td><td>不改变</td><td>等待计数归零；通常由启动任务的 goroutine 调用。</td></tr>
+      </tbody>
+    </table>
+
+    <h2>它不做什么</h2>
+    <table>
+      <thead><tr><th>问题</th><th>WaitGroup？</th><th>合适工具</th></tr></thead>
+      <tbody>
+        <tr><td>所有 worker 是否结束？</td><td>是</td><td><code>WaitGroup</code></td></tr>
+        <tr><td>同一时刻只允许一个 worker 修改 <code>hits</code>？</td><td>否</td><td><code>sync.Mutex</code></td></tr>
+        <tr><td>把任务结果或取消信号传给另一个 goroutine？</td><td>否</td><td>channel / <code>context</code></td></tr>
+        <tr><td>限制同时运行的 worker 数量？</td><td>否</td><td>有容量的 channel 或 semaphore</td></tr>
+      </tbody>
+    </table>
+
+    <h2>三条必须遵守的规则</h2>
+    <ol>
+      <li><strong>先 Add，再启动 goroutine。</strong>当计数为零时，正数 <code>Add</code> 必须发生在 <code>Wait</code> 前；否则 Wait 可能已经返回。</li>
+      <li><strong>每个 Add(1) 恰好匹配一次 Done()。</strong>漏掉 Done 会永久等待；多调用一次会使计数变负并 panic。</li>
+      <li><strong>首次使用后不要复制 WaitGroup。</strong>传给函数时使用指针 <code>*sync.WaitGroup</code>；复用它等待另一批独立任务前，必须先让上一次的 Wait 返回。</li>
+    </ol>
+
+    <h2>与第一节计数器的关系</h2>
+    <pre><code>var c Counter        // c.mu 保护 c.hits
+var wg sync.WaitGroup // wg 只追踪 worker 是否结束
+
+wg.Add(1)
+go func() {
+	defer wg.Done()
+	c.Add() // Add 内部仍须 Lock/Unlock
+}()
+wg.Wait()</code></pre>
+    <p><code>Wait</code> 返回意味着这个 goroutine 已执行完 <code>Done</code> 前的工作；但如果多个 worker 在运行期间同时写 <code>hits</code>，WaitGroup 不会阻止 race。<code>Counter.mu</code> 和 <code>wg</code> 各解决一个不同问题。</p>
+
+    <h2>版本提示：<code>wg.Go</code></h2>
+    <p>Go 1.25 新增 <code>wg.Go(func() { ... })</code>，会启动 goroutine、增加计数，并在函数返回时自动减计数。你的 Go 1.26.5 支持它；但 6.5840 的最低环境是 Go 1.22，因此本课程主线仍使用兼容的 <code>Add</code> / <code>defer Done</code> 模式。传给 <code>wg.Go</code> 的函数不能 panic。</p>
+
+    <p class="footnotes">权威资料：<a href="https://pkg.go.dev/sync#WaitGroup">sync.WaitGroup 官方文档</a>。完整讲解：<a href="../lessons/0001-go-concurrent-state.html#waitgroup">第一节的 WaitGroup 区块</a>。</p>
+  </main>
+</body>
+</html>

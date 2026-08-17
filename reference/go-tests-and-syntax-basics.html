@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>速查：Go 测试、函数与 range</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Reference · Go 基础语法</p>
+    <h1>读懂第一份 Go 测试代码</h1>
+    <p class="lede">这不是“记住模板”。目标是知道 Go 测试如何被发现、函数签名中每一段处于什么位置，以及循环到底会运行多少次。</p>
+
+    <h2>1. <code>testing</code> 包：谁运行测试？</h2>
+    <div class="callout">
+      <p><code>testing</code> 是 Go 标准库，用来描述测试的失败、日志和测试上下文。你<strong>不需要</strong>自己创建 <code>testing.T</code>，也不需要在代码中手动调用测试函数；<code>go test</code> 会生成测试程序并调用符合约定的函数。</p>
+    </div>
+    <pre><code>// 文件名必须以 _test.go 结尾
+package counter
+
+import "testing"
+
+// 函数名以 Test 开头，参数固定为 *testing.T。
+func TestCounterConcurrentAdd(t *testing.T) {
+	// 断言代码写在这里
+}</code></pre>
+    <ul>
+      <li><code>counter_test.go</code>：后缀 <code>_test.go</code> 让 <code>go test</code> 在测试时包含它，而普通构建不包含它。</li>
+      <li><code>package counter</code>：测试与被测代码处在同一 package，因此可以直接使用 <code>Counter</code>。</li>
+      <li><code>import "testing"</code>：允许写出 <code>testing.T</code> 这个类型。</li>
+      <li><code>TestCounterConcurrentAdd</code>：<code>Test</code> 前缀使它成为测试入口；剩余名字说明正在验证什么。</li>
+      <li><code>t *testing.T</code>：<code>t</code> 是变量名，<code>*testing.T</code> 是类型。星号表示指向测试上下文的指针；现在只需把它理解为“测试运行器传进来的报告工具”。</li>
+    </ul>
+
+    <h3>如何报告失败</h3>
+    <pre><code>t.Errorf("hits = %d, want %d", got, want) // 记录失败，但当前测试继续执行
+t.Fatalf("hits = %d, want %d", got, want) // 记录失败，并立刻结束当前测试函数</code></pre>
+    <p><code>f</code> 表示 format（格式化）：字符串里的每个 <code>%d</code> 会依次被后面的整数替换。第一节课使用 <code>Fatalf</code>，因为数量不对时继续执行没有意义。</p>
+
+    <h2>2. 为什么有的括号在函数名前？</h2>
+    <p>你看到的是两种不同声明：<strong>普通函数</strong>和<strong>方法</strong>。普通参数永远在函数名后面的圆括号中；函数名前的圆括号是方法的 receiver（接收者）。</p>
+    <pre><code>// 普通函数：名字在前，普通参数在名字后。
+func TestCounterConcurrentAdd(t *testing.T) {
+	// ...
+}
+
+// 方法：receiver 在名字前，普通参数仍在名字后。
+func (c *Counter) Add() {
+	c.hits++
+}
+
+// 也可以有返回值；返回类型放在参数列表后。
+func (c *Counter) Value() int {
+	return c.hits
+}</code></pre>
+    <ul>
+      <li><code>(c *Counter)</code> 不是 <code>Add</code> 的普通参数；它声明 <code>Add</code> 属于 <code>Counter</code>。因此能写 <code>c.Add()</code>。</li>
+      <li><code>c</code> 是接收者变量名；<code>*Counter</code> 是它的类型。<code>*</code> 表明方法操作同一个 <code>Counter</code> 实例，而不是获得它的一份拷贝。</li>
+      <li><code>t *testing.T</code> 和 <code>c *Counter</code> 都遵循 Go 的“<strong>名字在前，类型在后</strong>”规则。只有 receiver 的位置特殊：它额外放在方法名之前。</li>
+      <li><code>int</code> 在 <code>Value() int</code> 的最后，是返回类型，不是参数。</li>
+    </ul>
+
+    <h2>3. <code>for range workers</code> 到底做什么？</h2>
+    <pre><code>const workers = 3
+
+for range workers {
+	// 这里恰好运行 3 次
+}</code></pre>
+    <p>这在 Go 1.22 起合法。若右侧是整数 <code>n</code>，循环产生从 <code>0</code> 到 <code>n-1</code> 的值；本例不需要那个索引，所以没有给它起名字。也就是说，<code>for range workers</code> 的效果是“重复 worker 数量次”。你的 Go 1.26.5 和 6.5840 要求的 Go 1.22+ 都支持它。</p>
+    <pre><code>// 当索引本身也有用时，写出它：
+for i := range workers {
+	// i 依次为 0、1、2
+}
+
+// 更传统、在旧版 Go 也可用的等价写法：
+for i := 0; i &lt; workers; i++ {
+	// i 依次为 0、1、2
+}</code></pre>
+    <p>第一种写法中的 <code>:=</code> 表示“声明并赋值”；<code>i</code> 的作用域是整个循环块。第一节课中的内层 <code>for range addsPerWorker</code> 同理：它让每一个 worker 恰好调用 <code>Add</code> 100 次。</p>
+
+    <h2>4. 把测试主体逐行翻译</h2>
+    <pre><code>var c Counter                 // 新建被测计数器，初始 hits 为 0
+var wg sync.WaitGroup         // 新建等待计数器
+wg.Add(workers)               // 告诉它：有 100 个 goroutine 要等待
+
+for range workers {           // 重复 100 次，启动 100 个 worker
+	go func() {                 // 定义匿名函数，并在新的 goroutine 中调用它
+		defer wg.Done()           // 函数返回前把等待计数减 1
+		for range addsPerWorker { // 每个 worker 加 100 次
+			c.Add()
+		}
+	}()                          // () 是“现在调用这个匿名函数”
+}
+wg.Wait()                     // 阻塞到所有 worker 都调用 Done 为止
+
+if got, want := c.Value(), workers*addsPerWorker; got != want {
+	t.Fatalf("hits = %d, want %d", got, want)
+}</code></pre>
+    <p>最后的 <code>if</code> 有两部分：分号前用 <code>:=</code> 声明 <code>got</code> 和 <code>want</code>；分号后比较它们。它们只在这个 <code>if</code> 语句及其花括号内可见。<code>got</code> 是实际值，<code>want</code> 是期望值。</p>
+
+    <div class="callout warning">
+      <p><strong>容易混淆的点：</strong><code>go func() { ... }</code> 只是形成匿名函数，尚未调用；末尾 <code>()</code> 才是调用。完整的 <code>go func() { ... }()</code> 才会让这次调用在新 goroutine 中独立执行。</p>
+    </div>
+
+    <p class="footnotes">权威资料：<a href="https://pkg.go.dev/testing">testing 包文档</a>、<a href="https://go.dev/ref/spec">Go 语言规范</a>、<a href="https://go.dev/doc/go1.22">Go 1.22 发布说明</a>。回到 <a href="../lessons/0001-go-concurrent-state.html">第一节课</a>。</p>
+  </main>
+</body>
+</html>

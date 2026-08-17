@@ -14,6 +14,10 @@
   第一次创建 Go 练习项目时使用：`go mod init <模块路径>` 在项目根目录创建依赖清单 `go.mod`；`go run .` 编译并运行当前目录的 `main` 程序。
 - [Go Data Race Detector](https://go.dev/doc/articles/race_detector)
   数据竞争的定义、`-race` 的使用边界和报告解释；所有并发练习和课程实验的必读工具文档。
+- [`testing` 标准库文档](https://pkg.go.dev/testing)
+  `go test` 如何发现 `TestXxx` 函数，以及 `testing.T`、`Errorf` 和 `Fatalf` 的语义；第一次阅读或编写测试时使用。
+- [Go 语言规范：函数、方法与 `for`/`range`](https://go.dev/ref/spec)
+  函数参数、方法接收者和循环语法的权威定义；对语法位置或行为有疑问时使用。
 - [`sync` 标准库文档](https://pkg.go.dev/sync)
   `Mutex`、`WaitGroup`、`Cond` 等同步原语的精确语义；实现并发状态时查阅。
 - [Pro Git（官方中文书）](https://git-scm.com/book/zh/v2)
