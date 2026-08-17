@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第二节：用 channel 交接任务，并让 worker 正确退出</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">MIT 6.5840 路线 · 第 02 节</p>
+    <h1>用 channel 交接任务，并让 worker 正确退出</h1>
+    <p class="lede">一个 coordinator 把任务交给 worker 后，最危险的问题不是“暂时没任务”，而是“已经永远不会再有任务”。这一节只建立一个协议：发送方发送任务，并在任务流结束时关闭 channel；worker 用 <code>range</code> 接收并自然退出。</p>
+
+    <section class="meta" aria-label="课程信息">
+      <div><span class="label">单一技能</span>设计并追踪 channel 的任务结束协议</div>
+      <div><span class="label">完成标准</span>解释谁关闭、谁阻塞、何时退出</div>
+      <div><span class="label">进入课程的意义</span>为 coordinator / worker 的任务分发打基础</div>
+    </section>
+
+    <div class="callout">
+      <p><strong>范围刻意很小。</strong>本节只讨论一条不带缓冲的整数任务流，以及它如何明确结束；缓存、取消、超时和其他高级变体都留到后面。这里使用的是独立小程序，不是真正的 Lab 代码。</p>
+    </div>
+    <p><strong>首选主读：</strong>完成本节前后，阅读 Go 官方的 <a href="https://go.dev/ref/spec#Channel_types">channel 类型</a>、<a href="https://go.dev/ref/spec#Send_statements">发送</a>、<a href="https://go.dev/ref/spec#Receive_operator">接收</a> 与 <a href="https://go.dev/ref/spec#Close">关闭</a>章节；它们是本课所有阻塞和关闭结论的权威来源。</p>
+
+    <h2>0. 一分钟回忆：第 1 节的两种职责</h2>
+    <p>这不是考试，也不会自动给你贴上“已掌握”标签。先从记忆中选择，再看反馈；若不确定，课程会马上补上连接点。</p>
+    <section class="quiz" data-quiz>
+      <h3>检查 0</h3>
+      <p><code>Mutex</code> 与 <code>WaitGroup</code> 分别解决什么问题？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：Mutex 保护共享状态；WaitGroup 等待已登记的 goroutine 完成。" data-wrong="再想一次：一个工具管“安全访问”，另一个工具管“是否都做完”。" aria-pressed="false">保护 / 等待</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：一个工具管“安全访问”，另一个工具管“是否都做完”。" aria-pressed="false">等待 / 保护</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+    <p>复习入口：<a href="../reference/go-concurrency-safe-state.html">Mutex 速查</a>、<a href="../reference/go-sync-waitgroup.html">WaitGroup 速查</a>。这节新增的 channel 负责第三件事：<strong>把一个值和“没有更多值”这两个事实交给另一个 goroutine</strong>。</p>
+
+    <h2>1. 先画出协议，而不是先写 goroutine</h2>
+    <p>本节的无缓冲 channel 是 Go 让 goroutine 交接<strong>有类型的值</strong>的通信对象；它让发送和接收在同一个交接点同步。把它想成任务的交接点，而不是一个可以随意读写的共享任务表。对于这节的一条任务流，先写清楚所有权：</p>
+    <table>
+      <thead><tr><th>角色</th><th>它知道什么</th><th>它可以做什么</th></tr></thead>
+      <tbody>
+        <tr><td>producer（生产者）</td><td>是否还会产生新任务</td><td>发送任务；确认“再也没有”后宣布任务流结束</td></tr>
+        <tr><td>worker（消费者）</td><td>当前收到的任务</td><td>接收并处理任务；不负责宣布任务流结束</td></tr>
+      </tbody>
+    </table>
+    <p>这个规则直接对应后端经验：一个请求队列的上游最清楚自己是否还能投递；下游只消费。MIT 的 coordinator/worker 模型也需要回答“任务由谁发出、何时不再发出、等待者怎样退出”，但本课使用的是独立小程序，不是实验解答。</p>
+
+    <h2 id="channel-basics">2. 语法卡：创建、发送与接收</h2>
+    <div class="callout">
+      <h3><code>tasks := make(chan int)</code></h3>
+      <p><code>tasks</code> 是新变量名；<code>:=</code> 是第 1 节讲过的短变量声明；<code>make</code> 是本节第一次出现的内置函数；圆括号内的 <code>chan int</code> 指定它创建一个“元素类型为 <code>int</code> 的 channel”。<code>chan</code> 是 Go 关键字，<code>int</code> 限定这个 channel 只能交接整数。</p>
+      <p>这里没有写容量参数，所以它是<strong>无缓冲（unbuffered）</strong> channel：不能先把值塞进内部队列再继续。一次发送必须和一次接收配对，才能完成。Go 规范对 <a href="https://go.dev/ref/spec#Channel_types">channel 类型</a> 和 <a href="https://go.dev/ref/spec#Send_statements">无缓冲发送的阻塞条件</a>作了精确定义。</p>
+    </div>
+    <div class="callout">
+      <h3><code>tasks &lt;- 7</code>：send（发送）</h3>
+      <p><code>tasks</code> 位于左边，是目标 channel；<code>&lt;-</code> 的箭头朝向 channel；右边的 <code>7</code> 是要交接的整数。读成：“把 7 发送到 tasks”。若还没有 goroutine 正在接收，当前发送 goroutine 会在这一行等待。</p>
+    </div>
+    <div class="callout">
+      <h3><code>task := &lt;-tasks</code>：receive（接收）</h3>
+      <p>右侧的 <code>&lt;-tasks</code> 从 channel 取一个值；箭头朝向左边的新变量 <code>task</code>。若还没有发送者，当前接收 goroutine 会阻塞。发送和与它配对的接收完成时，值才真正交接。<a href="https://go.dev/ref/mem">Go 内存模型</a>规定：一次发送先发生于对应接收的完成；也就是发送前在同一 goroutine 已完成的操作，能排在这次配对接收之前。这是受同步约束的交接，不只是“碰巧同时发生”。</p>
+    </div>
+    <section class="quiz" data-quiz>
+      <h3>检查 1</h3>
+      <p>worker 已在 <code>&lt;-tasks</code> 上等待。producer 执行 <code>tasks &lt;- 7</code> 后，producer 会怎样？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：已有接收者准备好，这次无缓冲交接配对完成，发送方可以继续。" data-wrong="再想一次：题目已给出接收者正在等待；双方此时可以配对。" aria-pressed="false">可继续</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：题目已给出接收者正在等待；双方此时可以配对。" aria-pressed="false">会阻塞</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2 id="close-rule">3. API 卡：<code>close(tasks)</code> 不是一条任务</h2>
+    <div class="callout">
+      <p><code>close(tasks)</code> 调用内置函数 <code>close</code>；圆括号中是要关闭的 channel。它表达的是“<strong>以后不会再发送任何任务</strong>”，并不把某个特殊整数传给 worker。</p>
+      <p>本课的所有权规则是：<strong>唯一发送者在最后一次发送后关闭</strong>。关闭后再发送会 panic；再次关闭也会 panic。因此 worker 不该关闭它正在消费的 <code>tasks</code>，多个 worker 也不能各自猜测“任务结束了”。精确语义见 Go 规范的 <a href="https://go.dev/ref/spec#Close">close</a> 与 <a href="https://go.dev/ref/spec#Send_statements">send</a> 章节。</p>
+    </div>
+    <p><code>for task := range tasks</code> 的 <code>for</code> 和 <code>range</code> 已在第 1 节讲过；此处只补充它的 channel 边界：没有任务时它等接收；channel 已关闭且没有可接收任务时它<strong>结束循环</strong>。本课不用缓冲区，所以“关闭后还要先取走缓冲值”的变体留到以后。复习：<a href="../reference/go-loop-range-cheatsheet.html">for/range 速查</a>。</p>
+    <section class="quiz" data-quiz>
+      <h3>检查 2</h3>
+      <p>唯一 producer 已确认以后没有任何新任务。下一步最合适的动作是什么？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：producer 掌握“不会再发送”的事实，所以由它关闭任务 channel。" data-wrong="再想一次：WaitGroup 不能告诉 worker 任务流已经结束。" aria-pressed="false">关闭通道</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：WaitGroup 不能告诉 worker 任务流已经结束。" aria-pressed="false">等待工人</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>4. 把协议写成一个可测试的小程序</h2>
+    <p>下面不是 MIT 实验代码，而是一条最小的任务流。<code>worker</code> 每收到一个任务就把 <code>count</code> 加一；它只能在 <code>range</code> 结束后才把计数发给 <code>done</code>，随后返回。</p>
+    <div class="callout" id="go-statement">
+      <h3>语法卡：<code>go</code> 加普通函数调用</h3>
+      <p><code>go worker(tasks, done)</code> 与第 1 节的 <code>go func() { ... }()</code> 使用同一个 <code>go</code> 关键字。这里 <code>worker(tasks, done)</code> 是一次普通函数调用：<code>worker</code> 是函数名，圆括号内的 <code>tasks</code>、<code>done</code> 是按顺序传入的参数；最前面的 <code>go</code> 让这次调用在新 goroutine 中执行。</p>
+      <p><strong>没有“先运行谁”的承诺：</strong>执行 <code>go</code> 后，当前 goroutine 可以立刻继续，也可能是 worker 先继续。这里不依赖顺序：若 producer 先到 <code>tasks &lt;- 8</code>，无缓冲 send 会等到 worker 到达 receive；若 worker 先到 receive，它会等发送。</p>
+    </div>
+    <pre><code>// worker.go
+package handoff
+
+func worker(tasks chan int, done chan int) {
+	count := 0
+	for range tasks {
+		count++
+	}
+	done &lt;- count
+}</code></pre>
+    <p>函数参数的“名字在前、类型在后”与第 1 节相同：<code>tasks chan int</code> 和 <code>done chan int</code> 都是可发送也可接收整数的 channel。本节故意不使用单向 channel 类型，以免把“谁能关闭”与“谁能发送”的设计问题藏进类型语法里。</p>
+    <pre><code>// worker_test.go
+package handoff
+
+import "testing"
+
+func TestWorkerLeavesReceiveLoopAfterClose(t *testing.T) {
+	tasks := make(chan int)
+	done := make(chan int)
+
+	go worker(tasks, done)
+
+	tasks &lt;- 8
+	tasks &lt;- 13
+	close(tasks)
+
+	if got, want := &lt;-done, 2; got != want {
+		t.Fatalf("count = %d, want %d", got, want)
+	}
+}</code></pre>
+    <details>
+      <summary>按发生顺序追踪这段测试</summary>
+      <ol>
+        <li>测试创建两个无缓冲 channel：<code>tasks</code> 交接工作，<code>done</code> 交回一个结果。</li>
+        <li><code>go worker(tasks, done)</code> 把一次普通函数调用放到新的 goroutine 中执行，但不保证它立刻先运行。若 producer 先执行第一条 send，它会等待，直到 worker 到达 <code>range tasks</code> 的接收点。</li>
+        <li>每个 <code>tasks &lt;- ...</code> 都要和 worker 的一次接收配对。因此两个任务都已交接后，producer 才能调用 <code>close(tasks)</code>。</li>
+        <li>worker 下一次尝试从 <code>tasks</code> 取任务时发现任务流已关闭，<code>range</code> 结束；它发送 <code>count</code> 到 <code>done</code>，然后返回。</li>
+        <li>测试在 <code>&lt;-done</code> 等待结果。收到 <code>2</code> 后，已讲过的 <code>if got, want := ...</code> 检查两项任务是否都经过了 worker。</li>
+      </ol>
+    </details>
+    <div class="callout warning">
+      <p><strong>先预测，再改代码：</strong>若删除 <code>close(tasks)</code>，两个任务仍会被处理，但 worker 接着会在下一次 receive 上等待；它无法知道任务流已经结束，因此不会发送 <code>done</code>。测试也会等在 <code>&lt;-done</code>。不要把这个故意卡住的版本当作一次长时间运行的命令；先用这条时序解释它为何没有退出路径。</p>
+    </div>
+    <section class="quiz" data-quiz>
+      <h3>检查 3</h3>
+      <p>删除 <code>close(tasks)</code>，且所有任务都已经发送完。worker 的 <code>range</code> 会怎样？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：worker 无法把“暂时没有任务”区分为“以后永远没有任务”。" aria-pressed="false">自然结束</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：channel 仍然开放但没有发送者；range 会继续等待下一项。" data-wrong="再想一次：worker 无法把“暂时没有任务”区分为“以后永远没有任务”。" aria-pressed="false">继续等待</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <section class="practice">
+      <h2>你的练习：用一次 test 确认接收循环退出</h2>
+      <p><strong>影响范围：</strong>只在你自己的独立 Go 练习 module 中创建或替换 <code>worker.go</code> 与 <code>worker_test.go</code>；不会触碰 MIT 实验目录。若还没有练习 module，先回看<a href="0001-go-concurrent-state.html#go-setup-testing">第 1 节的 <code>go mod init</code> 命令卡</a>，它会在你选定的练习目录创建一个 <code>go.mod</code>。</p>
+      <ol>
+        <li>把上面的两个文件放在同一目录，并都保留 <code>package handoff</code>。</li>
+        <li>不运行程序，先在纸上写出：谁关闭 <code>tasks</code>？为什么不是 worker？删除 <code>close(tasks)</code> 后，哪一行会一直等？</li>
+        <li>确认推理后，在包含 <code>go.mod</code> 的练习根目录运行已讲过的 <a href="0001-go-concurrent-state.html#test-composition"><code>go test -race ./...</code></a>。它会编译并运行测试，同时检查这条实际执行路径上的 data race；预期结果含有 <code>ok</code>，但绿色结果不代替你对退出路径的解释。</li>
+        <li>把 <code>close(tasks)</code> 暂时改成注释，只做步骤 2 的时序推演；随后立刻恢复它。不要把一个明知会等待的版本留在测试中运行。</li>
+      </ol>
+    </section>
+
+    <section class="checklist">
+      <h2>完成检查</h2>
+      <ul>
+        <li>我能读出 <code>chan int</code>、<code>make(chan int)</code>、发送、接收和 <code>close</code> 中每个符号的角色。</li>
+        <li>我能画出无缓冲 send/receive 的配对，并说明哪个 goroutine 在何处阻塞。</li>
+        <li>我能说明：知道“不会再发送”的唯一 producer 关闭 channel；worker 只消费。</li>
+        <li>我能区分 channel 的交接/结束、Mutex 的共享状态保护和 WaitGroup 的完成等待。</li>
+        <li>我能解释为何省略 <code>close(tasks)</code> 会留下等待中的 worker。</li>
+      </ul>
+    </section>
+
+    <section class="next-step">
+      <h2>下一步</h2>
+      <p>把三项内容发给我：你对“谁关闭 tasks”的一句解释、删除 <code>close(tasks)</code> 后的等待时序，以及 <code>go test -race ./...</code> 的结果。收到这些证据后，我会记录你已经展示出的理解；下一节再讨论 buffered channel 带来的 backpressure（背压）变化。任何一个箭头或阻塞点不清楚，都直接问我。</p>
+    </section>
+
+    <p class="footnotes">主要资料：<a href="https://go.dev/ref/spec#Channel_types">Go 语言规范：channel 类型</a>、<a href="https://go.dev/ref/spec#Send_statements">发送</a>、<a href="https://go.dev/ref/spec#Receive_operator">接收</a>、<a href="https://go.dev/ref/spec#Close">关闭</a>、<a href="https://go.dev/ref/mem">Go Memory Model</a>。本课速查：<a href="../reference/go-channel-handoff.html">channel 任务交接与关闭</a>；前置复习：<a href="../reference/go-syntax-command-index.html">Go 语法与命令索引</a>、<a href="0001-go-concurrent-state.html">第一节课</a>。不清楚任何一步时，请直接向我追问。</p>
+  </main>
+</body>
+</html>

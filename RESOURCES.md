@@ -14,6 +14,10 @@
   第一次创建 Go 练习项目时使用：`go mod init <模块路径>` 在项目根目录创建依赖清单 `go.mod`；`go run .` 编译并运行当前目录的 `main` 程序。
 - [Go Data Race Detector](https://go.dev/doc/articles/race_detector)
   数据竞争的定义、`-race` 的使用边界和报告解释；所有并发练习和课程实验的必读工具文档。
+- [Go 语言规范：channel](https://go.dev/ref/spec#Channel_types)
+  `chan T`、`make(chan T)`、发送、接收与 `close` 的权威语义；设计 goroutine 之间的任务交接和退出协议时使用。
+- [Go Memory Model](https://go.dev/ref/mem)
+  channel send/receive 与 close 的 happens-before（先发生于）保证；判断一次消息交接能否建立顺序、以及何时仍需 Mutex 时使用。
 - [`testing` 标准库文档](https://pkg.go.dev/testing)
   `go test` 如何发现 `TestXxx` 函数，以及 `testing.T`、`Errorf` 和 `Fatalf` 的语义；第一次阅读或编写测试时使用。
 - [Go 语言规范：函数、方法与 `for`/`range`](https://go.dev/ref/spec)

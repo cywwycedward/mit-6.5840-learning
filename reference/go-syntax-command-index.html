@@ -23,10 +23,13 @@
         <tr><td>控制流</td><td><code>defer</code> / <code>return</code></td><td><a href="../lessons/0001-go-concurrent-state.html#mutex-rule">第一节，第 2 节</a></td><td>延迟调用的执行时机和当前 goroutine 的函数边界。</td></tr>
         <tr><td>控制流</td><td><code>for</code>、<code>range</code>、<code>break</code>、<code>continue</code>、label</td><td><a href="../lessons/0001-go-concurrent-state.html#go-for-range">第一节，第 3 节</a></td><td>条件、三段式、无限循环；array/slice、string、map、channel、整数 range；Go 1.22 循环变量语义。</td></tr>
         <tr><td>声明</td><td><code>var</code>、<code>const</code>、<code>:=</code>、<code>_</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-for-range">第一节，第 3、4 节</a></td><td>零值、常量、短变量声明作用域、空标识符。</td></tr>
-        <tr><td>并发语法</td><td>匿名函数与 <code>go func() { ... }()</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-setup-testing">第一节，第 4 节</a></td><td>函数定义、最后的调用括号、goroutine 的启动含义。</td></tr>
+        <tr><td>并发语法</td><td>匿名函数与 <code>go func() { ... }()</code>；<code>go f(args)</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-setup-testing">第一节，第 4 节</a>；<a href="../lessons/0002-channel-worker-shutdown.html#go-statement">第二节，第 4 节</a></td><td>匿名函数定义、最后的调用括号、普通函数调用前的 <code>go</code>、goroutine 的启动含义，以及不保证新 goroutine 先运行。</td></tr>
         <tr><td>测试 API</td><td><code>testing</code>、<code>TestXxx</code>、<code>*testing.T</code>、<code>Fatalf</code></td><td><a href="../lessons/0001-go-concurrent-state.html#go-setup-testing">第一节，第 4 节</a></td><td>测试发现规则、<code>t</code> 来源、格式化失败和当前测试的控制流。</td></tr>
         <tr><td>并发 API</td><td><code>sync.WaitGroup</code> / <code>Add</code> / <code>Done</code> / <code>Wait</code></td><td><a href="../lessons/0001-go-concurrent-state.html#waitgroup">第一节，第 5 节</a></td><td>计数模型、Add/Done 配平、先 Add 后启动、禁止复制、与 Mutex 的职责区别。</td></tr>
         <tr><td>控制流</td><td>带初始化语句的 <code>if</code>、<code>!=</code></td><td><a href="../lessons/0001-go-concurrent-state.html#test-composition">第一节，第 6 节</a></td><td>初始化变量的作用域和实际值/期望值断言。</td></tr>
+        <tr><td>并发类型 / 内置函数</td><td><code>chan T</code> / <code>make(chan T)</code></td><td><a href="../lessons/0002-channel-worker-shutdown.html#channel-basics">第二节，第 2 节</a></td><td>元素类型、无缓冲 channel 的创建、send/receive 必须配对的阻塞语义。</td></tr>
+        <tr><td>并发语法</td><td>send <code>ch &lt;- value</code> / receive <code>value := &lt;-ch</code></td><td><a href="../lessons/0002-channel-worker-shutdown.html#channel-basics">第二节，第 2 节</a></td><td>箭头方向、发送和接收的阻塞条件、消息交接的同步边界。</td></tr>
+        <tr><td>并发内置函数</td><td><code>close(ch)</code></td><td><a href="../lessons/0002-channel-worker-shutdown.html#close-rule">第二节，第 3 节</a></td><td>“不再发送”的含义、唯一关闭者、关闭后发送和重复关闭会 panic、<code>range</code> 的退出条件。</td></tr>
       </tbody>
     </table>
 
