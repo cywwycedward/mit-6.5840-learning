@@ -61,7 +61,7 @@ close(tasks)                    下一次取任务发现已关闭，循环结束
       <li><strong>关闭者不唯一：</strong>关闭后再发送或重复关闭都会 panic。先确定哪个 goroutine 掌握“发送结束”的事实，再让它独自关闭。</li>
     </ul>
 
-    <p class="footnotes">权威资料：<a href="https://go.dev/ref/spec#Channel_types">Go 语言规范：channel 类型</a>、<a href="https://go.dev/ref/spec#Send_statements">发送</a>、<a href="https://go.dev/ref/spec#Receive_operator">接收</a>、<a href="https://go.dev/ref/spec#Close">关闭</a>、<a href="https://go.dev/ref/mem">Go Memory Model：channel 通信</a>。完整讲解与练习：<a href="../lessons/0002-channel-worker-shutdown.html">第二节课</a>；复习 <a href="go-loop-range-cheatsheet.html">for/range</a>、<a href="go-concurrency-safe-state.html">Mutex</a> 与 <a href="go-sync-waitgroup.html">WaitGroup</a>。</p>
+    <p class="footnotes">权威资料：<a href="https://go.dev/ref/spec#Channel_types">Go 语言规范：channel 类型</a>、<a href="https://go.dev/ref/spec#Send_statements">发送</a>、<a href="https://go.dev/ref/spec#Receive_operator">接收</a>、<a href="https://go.dev/ref/spec#Close">关闭</a>、<a href="https://go.dev/ref/mem">Go Memory Model：channel 通信</a>。完整讲解与练习：<a href="../lessons/0004-channel-worker-shutdown.html">第四节课</a>；复习 <a href="go-loop-range-cheatsheet.html">for/range</a>、<a href="go-concurrency-safe-state.html">Mutex</a> 与 <a href="go-sync-waitgroup.html">WaitGroup</a>。</p>
   </main>
 </body>
 </html>

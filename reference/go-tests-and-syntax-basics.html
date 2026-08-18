@@ -36,7 +36,7 @@ func TestCounterConcurrentAdd(t *testing.T) {
     <h3>如何报告失败</h3>
     <pre><code>t.Errorf("hits = %d, want %d", got, want) // 记录失败，但当前测试继续执行
 t.Fatalf("hits = %d, want %d", got, want) // 记录失败，并立刻结束当前测试函数</code></pre>
-    <p><code>f</code> 表示 format（格式化）：字符串里的每个 <code>%d</code> 会依次被后面的整数替换。第一节课使用 <code>Fatalf</code>，因为数量不对时继续执行没有意义。</p>
+    <p><code>f</code> 表示 format（格式化）：字符串里的每个 <code>%d</code> 会依次被后面的整数替换。第三节课使用 <code>Fatalf</code>，因为数量不对时继续执行没有意义。</p>
 
     <h2>2. 为什么有的括号在函数名前？</h2>
     <p>你看到的是两种不同声明：<strong>普通函数</strong>和<strong>方法</strong>。普通参数永远在函数名后面的圆括号中；函数名前的圆括号是方法的 receiver（接收者）。</p>
@@ -77,7 +77,7 @@ for i := range workers {
 for i := 0; i &lt; workers; i++ {
 	// i 依次为 0、1、2
 }</code></pre>
-    <p>第一种写法中的 <code>:=</code> 表示“声明并赋值”；<code>i</code> 的作用域是整个循环块。第一节课中的内层 <code>for range addsPerWorker</code> 同理：它让每一个 worker 恰好调用 <code>Add</code> 100 次。</p>
+    <p>第一种写法中的 <code>:=</code> 表示“声明并赋值”；<code>i</code> 的作用域是整个循环块。第三节课中的内层 <code>for range addsPerWorker</code> 同理：它让每一个 worker 恰好调用 <code>Add</code> 100 次。</p>
 
     <h2>4. 把测试主体逐行翻译</h2>
     <pre><code>var c Counter                 // 新建被测计数器，初始 hits 为 0
@@ -103,7 +103,7 @@ if got, want := c.Value(), workers*addsPerWorker; got != want {
       <p><strong>容易混淆的点：</strong><code>go func() { ... }</code> 只是形成匿名函数，尚未调用；末尾 <code>()</code> 才是调用。完整的 <code>go func() { ... }()</code> 才会让这次调用在新 goroutine 中独立执行。</p>
     </div>
 
-    <p class="footnotes">权威资料：<a href="https://pkg.go.dev/testing">testing 包文档</a>、<a href="https://go.dev/ref/spec">Go 语言规范</a>、<a href="https://go.dev/doc/go1.22">Go 1.22 发布说明</a>。回到 <a href="../lessons/0001-go-concurrent-state.html">第一节课</a>。</p>
+    <p class="footnotes">权威资料：<a href="https://pkg.go.dev/testing">testing 包文档</a>、<a href="https://go.dev/ref/spec">Go 语言规范</a>、<a href="https://go.dev/doc/go1.22">Go 1.22 发布说明</a>。回到 <a href="../lessons/0003-go-concurrent-state.html">第三节课</a>。</p>
   </main>
 </body>
 </html>

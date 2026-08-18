@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第二节：MapReduce 为什么能重试任务</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">MIT 6.5840 路线 · 第 02 节</p>
+    <h1>MapReduce 为什么能重试任务</h1>
+    <p class="lede">worker 没有按时完成任务时，coordinator 可以把同一逻辑任务再交给别人。但“再跑一次”不是魔法：要保持结果有意义，应用的 Map/Reduce 必须满足明确的确定性边界。这一节只解释这条故障语义。</p>
+    <p class="lecture-map"><strong>对应 MIT 6.5840：<a href="https://pdos.csail.mit.edu/6.824/schedule.html#2026-2-3">L1：Introduction</a>。</strong>L1 以 MapReduce 说明分布式系统的 partial failure（部分失败）与容错：framework 跟踪 task、调度 worker 并从 crash 中恢复。本节忠实解释它的重试动机与正确性前提，不提供 Lab 1 的实现方案。</p>
+
+    <section class="meta" aria-label="课程信息">
+      <div><span class="label">单一技能</span>解释一次重试为何仍能保持作业语义</div>
+      <div><span class="label">完成标准</span>区分超时、crash、straggler 与完成</div>
+      <div><span class="label">暂不做的事</span>不设计 RPC、timer 或状态代码</div>
+    </section>
+
+    <div class="callout">
+      <p><strong>资料边界。</strong>“任务重试”同时出现在 L1 讲义、原始 MapReduce 论文和 Lab 1 中，但细节不同：论文讨论 Google 集群中的 <code>master</code>、worker ping、local disk 与 atomic commit；2026 Lab 使用 <code>coordinator</code>，并规定 10 秒后重分配未完成 task。下面会明确标记概念与 Lab 专有规则，避免把其中一个环境的实现细节当作另一个的要求。</p>
+    </div>
+
+    <h2>0. 一分钟回忆：重复执行时，哪个结果是“同一个任务”的结果？</h2>
+    <p>上一节中，一个 Map task 为输入 split 产生 intermediate key/value pairs。现在假设 coordinator 把同一个 split 的 Map task 发给 A，A 沉默后又发给 B。若 A 与 B 产生的内容不同，shuffle 还能得到一个清晰的词频结果吗？</p>
+    <section class="quiz" data-quiz>
+      <h3>检查 0</h3>
+      <p>对于同一份输入，重试后的 Map 输出应满足什么条件？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：相同输入应产生相同的 intermediate output，重试才能对应同一个逻辑 task。" data-wrong="再想一次：Reduce 可能看到其中任一次 execution 的输出；两次输出不同会怎样？" aria-pressed="false">输出应相同</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：若同一逻辑 task 的两次 execution 随机地产生不同数据，最终结果取决于调度时机。" aria-pressed="false">只要某一次成功即可，内容无关</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>1. coordinator 管逻辑任务，不保证知道机器真相</h2>
+    <p>原论文中的 <code>master</code>（本课程 Lab 改称 <code>coordinator</code>）为每个 Map 和 Reduce task 记录状态。一个有用的心智模型是：</p>
+    <table>
+      <thead><tr><th>逻辑 task 状态</th><th>coordinator 知道什么</th><th>下一步可能做什么</th></tr></thead>
+      <tbody>
+        <tr><td><code>idle</code></td><td>还没有有效执行者</td><td>分配给空闲 worker</td></tr>
+        <tr><td><code>in-progress</code></td><td>已分配，但尚未记录为完成</td><td>等待；若认为执行不再可靠则重新分配</td></tr>
+        <tr><td><code>completed</code></td><td>已接受该逻辑 task 的有效结果</td><td>把结果位置提供给下一阶段，或继续其他 task</td></tr>
+      </tbody>
+    </table>
+    <p>这不是在猜测“worker 此刻一定已 crash”。分布式系统常见的难点是：coordinator 看到的是<strong>没有收到完成消息</strong>，而不是机器内部的真相。它可能 crash、卡住、网络断开，或只是很慢。</p>
+    <div class="callout warning">
+      <p><strong>Lab 专有规则。</strong>2026 Lab 1 要求：若 worker 在合理时间内未完成，coordinator 等待 <strong>10 秒</strong> 后将同一 task 给另一 worker。这个 timeout 是作出重试决策的规则，<strong>不是</strong>“已经证明原 worker 死亡”的证据；L1 讲义和论文提供的是更一般的部分失败背景。</p>
+    </div>
+
+    <h2>2. 重试安全的前提：deterministic</h2>
+    <p>deterministic（确定性）表示：给定相同输入，函数产生相同输出。L1 的 MapReduce 讨论要求 Map 和 Reduce 应是 pure deterministic functions（纯确定函数）：它们只依赖自己的参数或输入，不偷偷读取会变化的外部状态，也不以随机结果或外部副作用改变语义。</p>
+    <div class="diagram">同一 input split
+      │
+      ├─► Map execution A ─► intermediate output X
+      │
+      └─► Map execution B（重试） ─► 也必须是 X
+
+coordinator 可以接受其中一次有效完成；Reduce 看见的仍是该逻辑 task 应有的数据。</div>
+    <p>词频的 Map 是典型例子：相同文本总会发出相同的 <code>(word, 1)</code> pairs；Reduce 对同一组 values 做加法也会得到相同计数。相反，若 Map 每次都附上当前时间或随机数，同一逻辑任务的重试可能改变 key/value，最终作业就取决于“哪次先被接受”，不再有清楚的顺序语义。</p>
+    <section class="quiz" data-quiz>
+      <h3>检查 1</h3>
+      <p>下面哪个 Map 行为最适合作为可重试的词频任务？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：它只依赖输入文本，重试会产生相同的 pairs。" data-wrong="再想一次：重试时，哪些信息会改变输出？" aria-pressed="false">对每个输入词发出 <code>(word, 1)</code></button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：时间会改变，重试不再对同一输入给出同一输出。" aria-pressed="false">对每个词发出 <code>(word, 当前时间)</code></button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>3. 不同的“没有按时完成”</h2>
+    <table>
+      <thead><tr><th>情况</th><th>含义</th><th>本节应得出的结论</th></tr></thead>
+      <tbody>
+        <tr><td>worker crash</td><td>执行者确实停止，可能丢失其 local intermediate data</td><td>framework 需要让逻辑 task 有重新执行的路径</td></tr>
+        <tr><td>straggler</td><td>worker 很慢，但不一定失效</td><td>慢不等于 crash；论文讨论 backup execution 来缩短尾部</td></tr>
+        <tr><td>超时</td><td>coordinator 在期限内没观察到完成</td><td>是重试依据，不是对 crash 的确定诊断</td></tr>
+        <tr><td>coordinator / master crash</td><td>调度者自身停止</td><td>不能假定它已容错；原论文实现中 master 失效会终止 job</td></tr>
+      </tbody>
+    </table>
+    <p>论文还解释了为什么 Map 与 Reduce 的重跑边界可能不同：Map intermediate output 存在执行 Map 的 worker 的 local disk；那个 worker 失效时，已完成的 Map 也必须重新执行。Reduce 的最终输出存放在 global file system 时则不必重跑。这是论文的生产系统机制；Lab 的本机共享文件系统是教学化环境，不能直接照搬这些存储假设。</p>
+
+    <h2>4. “完成”还需要安全地发布结果</h2>
+    <p>原论文用 private temporary files（私有临时文件）生成任务结果，再以 atomic commit（原子提交）把某一次 Reduce 的结果发布为最终文件。这样两个 execution 即使重叠，读者也不会看到半写入的最终结果。这个机制配合 deterministic functions，才让分布式、有重试的执行对应一个清晰的无故障结果。</p>
+    <p><strong>本节只建立语义，不要求实现。</strong>后面的 Go、RPC、文件与 coordinator 课程才会分别解释实现所需的工具和测试。此刻只要能说清：重试的是一个逻辑 task，而不是“同一 worker 的第二次机会”。</p>
+
+    <section class="practice">
+      <h2>你的练习：为重试画出理由</h2>
+      <p>不用写代码，按顺序回答：</p>
+      <ol>
+        <li>一个 Map task 已分给 W1。10 秒内 coordinator 没收到完成消息。写出它知道的事实，以及它<strong>不知道</strong>的一个事实。</li>
+        <li>它把同一逻辑 task 重发给 W2。用一句话说明 deterministic 为什么让这种重试有意义。</li>
+        <li>W1 是 straggler 而非 crash。为什么“启动另一次 execution”不要求先证明 W1 已死？</li>
+        <li>若 Map 的结果依赖当前时间，哪个结论失效：同一输入有相同输出，还是 worker 可以并行？为什么？</li>
+      </ol>
+    </section>
+
+    <section class="checklist">
+      <h2>完成检查</h2>
+      <ul>
+        <li>我能区分逻辑 task 的 <code>idle</code>、<code>in-progress</code> 与 <code>completed</code> 状态。</li>
+        <li>我能说明 timeout 是重试决策，而不是 crash 的证明。</li>
+        <li>我能解释同一输入上的 Map/Reduce 为什么需要 deterministic，才能安全地接受重试结果。</li>
+        <li>我能区分 worker crash、straggler 与 coordinator/master crash，也不会把论文的存储细节误称为 Lab 的既定实现。</li>
+      </ul>
+    </section>
+
+    <section class="next-step">
+      <h2>下一步</h2>
+      <p>把四项练习答案发给我。确认你既能追踪 L1 的数据流、也能解释重试语义后，进入<a href="0003-go-concurrent-state.html">下一节 L2 课程</a>：先建立 Go 并发状态的安全规则，再用这些工具逐步接近 coordinator/worker 的实际实现。</p>
+    </section>
+
+    <p class="footnotes">主要资料：<a href="https://pdos.csail.mit.edu/6.824/schedule.html#2026-2-3">MIT 6.5840 2026 L1 课表</a>、<a href="../reference/lec1/l01.txt">L1 讲义</a>、<a href="../reference/lec1/mapreduce.pdf">课程托管的 MapReduce 论文</a>、<a href="../reference/lec1/lab-mr.html">Lab 1 说明</a>。事实来源、论文与 Lab 的边界：<a href="../reference/lec1-introduction-mapreduce-research.md">L1 调研笔记</a>。不清楚哪一种失败或为何能重试时，请直接提问。</p>
+  </main>
+</body>
+</html>

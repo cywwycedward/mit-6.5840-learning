@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>第一节：让 Go 服务状态在并发请求下保持正确</title>
+  <title>第三节：让 Go 服务状态在并发请求下保持正确</title>
   <link rel="stylesheet" href="../assets/lesson.css">
   <script src="../assets/quiz.js" defer></script>
 </head>
 <body>
   <main>
-    <p class="eyebrow">MIT 6.5840 路线 · 第 01 节</p>
+    <p class="eyebrow">MIT 6.5840 路线 · 第 03 节</p>
     <h1>让 Go 服务状态在并发请求下保持正确</h1>
     <p class="lede">这一节以一个并发计数器为主线：先补齐它首次用到的 Go 语法、测试命令、循环和 WaitGroup，再亲手写出并验证一个不会丢失更新的后端状态。</p>
+    <p class="lecture-map"><strong>对应 MIT 6.5840：<a href="https://pdos.csail.mit.edu/6.824/schedule.html#2026-2-5">L2：RPC and Threads</a>。</strong>本节建立这一讲所需的并发状态规则：多个 goroutine 处理请求时，如何让它们安全访问同一份服务状态；这也为之后的 MapReduce coordinator 打下基础。</p>
 
     <section class="meta" aria-label="课程信息">
       <div><span class="label">单一技能</span>保护并验证共享状态</div>

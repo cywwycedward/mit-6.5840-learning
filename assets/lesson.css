@@ -35,6 +35,8 @@ h3 { margin: 28px 0 8px; font-size: 1.08rem; }
 p { margin: 0 0 16px; }
 a { color: var(--accent); text-underline-offset: 3px; }
 .lede { max-width: 48rem; margin-top: 18px; font-size: 1.2rem; color: #35414d; }
+.lecture-map { margin-top: 16px; padding: 10px 14px; border-left: 4px solid var(--accent); background: var(--accent-pale); color: #25464a; }
+.lecture-map strong { color: var(--ink); }
 .meta, .callout, .quiz, .practice, .checklist, .next-step, details { margin: 24px 0; padding: 20px 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
 .meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .meta div { padding-right: 12px; border-right: 1px solid var(--line); }

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第一节：追踪一个 MapReduce 作业的数据流</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">MIT 6.5840 路线 · 第 01 节</p>
+    <h1>追踪一个 MapReduce 作业的数据流</h1>
+    <p class="lede">先不写任何 Lab 代码。这一节只做一件事：从输入分片出发，追踪一个 key/value 如何经过 Map、shuffle 和 Reduce，成为最终结果。能画出这条线，才知道 coordinator 和 worker 之后要协调什么。</p>
+    <p class="lecture-map"><strong>对应 MIT 6.5840：<a href="https://pdos.csail.mit.edu/6.824/schedule.html#2026-2-3">L1：Introduction</a>。</strong>L1 用 MapReduce 作为分布式基础设施的入门案例：应用只提供 Map/Reduce，框架负责分片、并行、通信与故障处理。本节忠实讲解其中的数据流模型，不等同于 Lab 1 的实现课。</p>
+
+    <section class="meta" aria-label="课程信息">
+      <div><span class="label">单一技能</span>追踪一个 key/value 从输入到最终输出</div>
+      <div><span class="label">完成标准</span>画出 Map、shuffle、Reduce 的边界</div>
+      <div><span class="label">暂不做的事</span>不实现 RPC、worker 或 Lab 1</div>
+    </section>
+
+    <div class="callout">
+      <p><strong>资料边界。</strong>本节以 L1 讲义和课程指定的 MapReduce 论文为事实来源。讲义把 MapReduce 定位为解释 storage、communication、computation、并行和 partial failure（部分失败）的案例；这里为初学者把它收束为一条可检查的数据流。后面涉及故障重试时会继续区分论文与 Lab 的具体规则。</p>
+    </div>
+
+    <h2>0. 先预测：重复词应该在哪里合并？</h2>
+    <p>有两个输入分片：<code>A = "rain sun rain"</code>，<code>B = "sun"</code>。如果两台机器各自只看一个分片，它们能不能直接得出 <code>rain</code> 的全局次数？先选一个答案，再看理由。</p>
+    <section class="quiz" data-quiz>
+      <h3>检查 0</h3>
+      <p>两次出现的 <code>rain</code> 都在 A 中，但 B 也会产生其他词。Map 完成后，哪个步骤负责把同一个词的值放到一起？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：Map 只为各自的输入产生 intermediate key/value pairs；它不负责从其他 Map 收集同 key 的值。" aria-pressed="false">Map</button>
+        <button class="answer" type="button" data-correct="true" data-right="正确：shuffle / grouping 把同一个 intermediate key 的 values 汇集起来，Reduce 才能做聚合。" data-wrong="再想一次：哪一步跨越了不同 Map 的输出，并按 key 重新组织数据？" aria-pressed="false">shuffle / grouping</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：Reduce 处理的前提是同 key 的 values 已被汇集；完成这件事的是 shuffle / grouping。" aria-pressed="false">Reduce</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>1. 应用写两个函数，框架承担分布式复杂度</h2>
+    <p>L1 的核心观察不是“把一个循环拆到多台机器”，而是把职责分开：应用作者只描述数据如何转换；MapReduce framework（框架）负责把这些转换放到许多机器上执行，并处理分片、调度、通信和失败。</p>
+    <table>
+      <thead><tr><th>角色</th><th>它提供或处理什么</th><th>本节中的例子</th></tr></thead>
+      <tbody>
+        <tr><td>应用</td><td>定义 <code>Map</code> 与 <code>Reduce</code> 的业务含义</td><td>词频统计：见到一个词就发出一次计数</td></tr>
+        <tr><td>MapReduce framework</td><td>切分输入、调度 task、传递中间数据、并行与恢复</td><td>让两个输入分片分别交给 worker，并把同词收集起来</td></tr>
+        <tr><td>worker</td><td>执行被分配的一项 Map 或 Reduce task</td><td>处理 A 或 B；稍后处理一个 key 的 values</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <p><strong>术语卡：key/value pair。</strong><code>key</code> 是用来归类的数据标签，例如词 <code>rain</code>；<code>value</code> 是随这个标签传递的信息，例如 <code>1</code>。写成 <code>(rain, 1)</code> 表示一对数据，而不是 Go 的语法，也不是 Go 的 <code>map</code> 类型。Map 输出的 pair 叫 intermediate（中间）key/value pair，因为它还不是最终结果。</p>
+    </div>
+    <p>概念上，两个应用函数的输入输出是：</p>
+    <pre><code>Map(input record)              → zero or more intermediate (key, value) pairs
+Reduce(intermediate key, values) → zero or more final output records</code></pre>
+    <p>第二行的 <code>values</code> 是同一个 key 收集到的<strong>全部</strong> values，不是只拿到其中一个值。上面的箭头是算法记号，不是需要编译的代码。</p>
+
+    <h2>2. 一条完整的数据线：Map → shuffle → Reduce</h2>
+    <p>设有两个 input split（输入分片），每个 split 对应一个 Map task。词频应用的 Map 对每个词发出 <code>(word, 1)</code>；Reduce 把同词的所有 <code>1</code> 相加。</p>
+    <div class="diagram">Input split A: "rain sun rain" ─► Map A ─► (rain,1) (sun,1) (rain,1)
+Input split B: "sun"          ─► Map B ─► (sun,1)
+                                            │
+                                            ▼
+                                  shuffle / grouping
+                                  rain ─► [1, 1]
+                                  sun  ─► [1, 1]
+                                            │
+                                            ▼
+                                  Reduce(rain, [1,1]) ─► (rain,2)
+                                  Reduce(sun,  [1,1]) ─► (sun,2)</div>
+    <p><strong>Map：</strong>每个 task 只需读取自己的输入，因此 Map A 与 Map B 可以并行。<strong>shuffle / grouping：</strong>框架按 intermediate key 重新组织来自所有 Map 的输出，使同一个 key 的 values 到同一个 Reduce。<strong>Reduce：</strong>对一个 key 及其 values 做真正的聚合，生成最终输出。</p>
+    <section class="quiz" data-quiz>
+      <h3>检查 1</h3>
+      <p>Map A 发出 <code>(rain,1)</code>，Map B 也发出 <code>(rain,1)</code>。哪一种说法正确？</p>
+      <div class="answers">
+        <button class="answer" type="button" data-correct="true" data-right="正确：shuffle 必须让这两个 value 都进入同一个以 rain 为输入的 Reduce 调用。" data-wrong="再想一次：如果两个 Reduce 各自只看到一个 1，它们能独立算出 rain 的总数吗？" aria-pressed="false">同一个 Reduce 必须看到两个 1</button>
+        <button class="answer" type="button" data-correct="false" data-right="" data-wrong="不对：那会把同一个 key 的 values 拆开，Reduce 无法做该 key 的全局聚合。" aria-pressed="false">两个 Reduce 各算一次 rain</button>
+      </div>
+      <p class="feedback" aria-live="polite"></p>
+    </section>
+
+    <h2>3. 分区不是聚合：它决定谁处理哪些 key</h2>
+    <p>一个真实作业通常有 <code>M</code> 个 Map task 和 <code>R</code> 个 Reduce task。MapReduce 使用一致的 partition function（分区函数），例如 <code>hash(key) mod R</code>，把每个 key 分到一个 Reduce partition（Reduce 分区）。因此任意一个 key 的所有 values 都会到同一个 Reduce task；但一个 task 通常要处理多个不同 key。</p>
+    <p>这就是 L1 所说的 shuffle：Map 的 intermediate output 先按分区写出；每个 Reduce 获取所有 Map 在<strong>自己分区</strong>中的数据，再按 key 排序或分组，逐 key 调用 Reduce。作业成功时有 <code>R</code> 个输出文件，而不一定是一份单独的大文件。</p>
+    <div class="callout warning">
+      <p><strong>不要混淆。</strong>“一个 Reduce task 处理一个 partition”不等于“一个 Reduce task 只处理一个 key”。分区是分工方式；grouping 才保证同 key 的 values 被放在一起。</p>
+    </div>
+
+    <h2>4. 这条数据流带来的好处与限制</h2>
+    <p>Map task 彼此不需要共享状态，Reduce task 也可在各自分区上并行，因此更多 worker 有机会提升吞吐量。L1 同时提醒：这不是自动的线性加速；网络、磁盘、CPU、内存和负载不均衡都可能成为瓶颈。</p>
+    <p>换来的限制是应用必须服从单一的批处理形状：<strong>Map → shuffle → Reduce</strong>。应用不能在 task 之间直接交互或保存跨阶段状态，只能通过 intermediate output 传递。这正是框架能接管大量分布式复杂度的原因。</p>
+
+    <section class="practice">
+      <h2>你的练习：不用代码追踪一次作业</h2>
+      <p>在纸上完成下面四步；这是一道模型练习，不需要创建文件或运行命令。</p>
+      <ol>
+        <li>输入分片 C 是 <code>"tea tea"</code>，D 是 <code>"coffee tea"</code>。写出 Map C 与 Map D 分别发出的 intermediate pairs。</li>
+        <li>画出 shuffle 后 <code>tea</code> 和 <code>coffee</code> 各自的 values 列表。</li>
+        <li>写出两次 Reduce 的最终输出。</li>
+        <li>用一句话说明：为什么 Map C 和 Map D 可以并行，而两个 <code>tea</code> 的计数必须在 shuffle 后才合并？</li>
+      </ol>
+    </section>
+
+    <section class="checklist">
+      <h2>完成检查</h2>
+      <ul>
+        <li>我能区分应用提供的 Map/Reduce 与框架承担的分片、调度和数据传递。</li>
+        <li>我能说出 Map 按输入产生 intermediate pairs，shuffle 按 key 汇集 values，Reduce 聚合一个 key 的 values。</li>
+        <li>我能解释 partition 与 grouping 的不同，以及为什么一个 Reduce task 可以处理多个 key。</li>
+        <li>我能指出 MapReduce 的并行边界和它对应用形状的限制。</li>
+      </ul>
+    </section>
+
+    <section class="next-step">
+      <h2>下一步</h2>
+      <p>把练习的四项答案发给我。确认你能独立追踪数据流后，进入<a href="0002-mapreduce-retry-semantics.html">下一节 L1 课程</a>：我们只讨论 worker 没有完成任务时，coordinator 为什么能重试，以及为什么 Map/Reduce 的 deterministic（确定性）很重要；仍不写 Lab 实现。</p>
+    </section>
+
+    <p class="footnotes">主要资料：<a href="https://pdos.csail.mit.edu/6.824/schedule.html#2026-2-3">MIT 6.5840 2026 L1 课表</a>、<a href="../reference/lec1/l01.txt">L1 讲义</a>、<a href="../reference/lec1/mapreduce.pdf">课程托管的 MapReduce 论文</a>。资料边界与术语差异：<a href="../reference/lec1-introduction-mapreduce-research.md">L1 调研笔记</a>。不清楚一条箭头或一个术语时，请直接提问。</p>
+  </main>
+</body>
+</html>
